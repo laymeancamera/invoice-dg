@@ -1,0 +1,6 @@
+{
+  "name": "ប្រព័ន្ធវិក្កយបត្រជាងថតរូប - Photography Invoice System",
+  "description": "ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រជាងថតរូប កញ្ចប់ Pre-wedding ថ្ងៃមង្គលការ តាមដានការទូទាត់ ប្រវត្តិអតិថិជន KHQR Code និឹង Export ជា PNG/Telegram",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,22 @@
+{
+  "short_name": "PhotoStudio",
+  "name": "PhotoStudio Pro - ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=192&auto=format&fit=crop&q=80",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=512&auto=format&fit=crop&q=80",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/"
+}

@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    font-family: 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  *, ::before, ::after {
+    font-family: 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    font-family: 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: manipulation;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  html {
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
+  input, textarea, select, button {
+    font-family: 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Custom font family utilities */
+  .font-moul {
+    font-family: 'Moul', 'Noto Sans Khmer', cursive, sans-serif;
+    line-height: 1.8;
+  }
+
+  .font-koh {
+    font-family: 'Koh Santepheap', 'Noto Sans Khmer', serif;
+  }
+
+  .font-battambang {
+    font-family: 'Battambang', 'Noto Sans Khmer', sans-serif;
+  }
+
+  .font-kantumruy {
+    font-family: 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif;
+  }
+
+  .font-khmer {
+    font-family: 'Noto Sans Khmer', sans-serif;
+  }
+}
+
+/* Hide scrollbar for clean UI tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* iOS Safe Area Utilities for Dynamic Island / Notch */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+

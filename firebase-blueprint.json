@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "studio_profile": {
+      "title": "Studio Profile Settings",
+      "description": "Global studio profile and logo settings",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "khmerName": { "type": "string" },
+        "logoUrl": { "type": "string" }
+      }
+    },
+    "invoices": {
+      "title": "Invoices",
+      "description": "All photography invoices",
+      "type": "object",
+      "properties": {
+        "invoiceNumber": { "type": "string" },
+        "customerName": { "type": "string" }
+      }
+    },
+    "packages": {
+      "title": "Packages",
+      "description": "Photography service packages",
+      "type": "object",
+      "properties": {
+        "nameKhmer": { "type": "string" }
+      }
+    },
+    "users": {
+      "title": "User Accounts",
+      "description": "System user accounts",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "role": { "type": "string" }
+      }
+    },
+    "system_config": {
+      "title": "System Config",
+      "description": "System settings",
+      "type": "object",
+      "properties": {
+        "systemTitle": { "type": "string" }
+      }
+    }
+  }
+}
