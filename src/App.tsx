@@ -137,9 +137,13 @@ export default function App() {
       return;
     }
 
-    // If logged in as ADMIN, only admin console is active
+    // If logged in as ADMIN:
     if (currentUser.role === 'admin') {
-      setActiveTab('admin');
+      if (tab === 'settings' || tab === 'admin') {
+        setActiveTab(tab);
+      } else {
+        setActiveTab('admin');
+      }
       return;
     }
 
@@ -161,6 +165,7 @@ export default function App() {
 
   // Studio Settings Handler
   const handleSaveStudio = (prof: StudioProfile) => {
+    setStudio(prof);
     saveStudioProfile(prof);
   };
 
@@ -213,6 +218,8 @@ export default function App() {
             {activeTab === 'admin' && (
               <AdminDashboard
                 currentUser={currentUser}
+                studio={studio}
+                onSaveStudio={handleSaveStudio}
               />
             )}
 
@@ -273,6 +280,7 @@ export default function App() {
             {activeTab === 'settings' && (
               <StudioSettings
                 studio={studio}
+                currentUser={currentUser}
                 onSaveStudio={handleSaveStudio}
               />
             )}

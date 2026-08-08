@@ -18,17 +18,92 @@ import {
 
 export const STORAGE_EVENT = 'laymean_photo_storage_change';
 
-// In-Memory Cloud Data Cache
-let cloudInvoicesCache: Invoice[] = [];
-let cloudStudioCache: StudioProfile = DEFAULT_STUDIO_PROFILE;
-let cloudPackagesCache: PackageItem[] = DEFAULT_PACKAGES;
-let cloudUsersCache: UserAccount[] = [];
-let cloudConfigCache: SystemConfig = {
-  allowPublicRegistration: true,
-  maintenanceMode: false,
-  systemTitle: 'វិក្កយបត្រ Digital Pro',
-  defaultCurrency: 'USD'
-};
+// In-Memory & LocalStorage Cloud Data Cache
+const STUDIO_CACHE_KEY = 'laymean_studio_profile_cache';
+const CONFIG_CACHE_KEY = 'laymean_system_config_cache';
+const INVOICES_CACHE_KEY = 'laymean_invoices_cache';
+const PACKAGES_CACHE_KEY = 'laymean_packages_cache';
+const USERS_CACHE_KEY = 'laymean_users_cache';
+
+function loadLocalStudioCache(): StudioProfile {
+  if (typeof window === 'undefined') return DEFAULT_STUDIO_PROFILE;
+  try {
+    const raw = localStorage.getItem(STUDIO_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        return { ...DEFAULT_STUDIO_PROFILE, ...parsed };
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load local studio profile cache:', e);
+  }
+  return DEFAULT_STUDIO_PROFILE;
+}
+
+function loadLocalConfigCache(): SystemConfig {
+  const defaultConfig: SystemConfig = {
+    allowPublicRegistration: true,
+    maintenanceMode: false,
+    systemTitle: 'វិក្កយបត្រ Digital Pro',
+    defaultCurrency: 'USD'
+  };
+  if (typeof window === 'undefined') return defaultConfig;
+  try {
+    const raw = localStorage.getItem(CONFIG_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        return { ...defaultConfig, ...parsed };
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load local config cache:', e);
+  }
+  return defaultConfig;
+}
+
+function loadLocalInvoicesCache(): Invoice[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(INVOICES_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return [];
+}
+
+function loadLocalPackagesCache(): PackageItem[] {
+  if (typeof window === 'undefined') return DEFAULT_PACKAGES;
+  try {
+    const raw = localStorage.getItem(PACKAGES_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return DEFAULT_PACKAGES;
+}
+
+function loadLocalUsersCache(): UserAccount[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(USERS_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return [];
+}
+
+let cloudInvoicesCache: Invoice[] = loadLocalInvoicesCache();
+let cloudStudioCache: StudioProfile = loadLocalStudioCache();
+let cloudPackagesCache: PackageItem[] = loadLocalPackagesCache();
+let cloudUsersCache: UserAccount[] = loadLocalUsersCache();
+let cloudConfigCache: SystemConfig = loadLocalConfigCache();
 
 // Internal broadcast notify helper
 function notifyChange() {
@@ -41,26 +116,41 @@ function notifyChange() {
 if (typeof window !== 'undefined') {
   subscribeStudioProfile((updated) => {
     cloudStudioCache = updated;
+    try {
+      localStorage.setItem(STUDIO_CACHE_KEY, JSON.stringify(updated));
+    } catch (e) {}
     notifyChange();
   });
 
   subscribeSystemConfig((updated) => {
     cloudConfigCache = updated;
+    try {
+      localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify(updated));
+    } catch (e) {}
     notifyChange();
   });
 
   subscribeInvoices((updated) => {
     cloudInvoicesCache = updated;
+    try {
+      localStorage.setItem(INVOICES_CACHE_KEY, JSON.stringify(updated));
+    } catch (e) {}
     notifyChange();
   });
 
   subscribePackages((updated) => {
     cloudPackagesCache = updated;
+    try {
+      localStorage.setItem(PACKAGES_CACHE_KEY, JSON.stringify(updated));
+    } catch (e) {}
     notifyChange();
   });
 
   subscribeUsers((updated) => {
     cloudUsersCache = updated;
+    try {
+      localStorage.setItem(USERS_CACHE_KEY, JSON.stringify(updated));
+    } catch (e) {}
     notifyChange();
   });
 }
@@ -72,6 +162,9 @@ export function getStudioProfile(): StudioProfile {
 
 export function saveStudioProfile(profile: StudioProfile): void {
   cloudStudioCache = profile;
+  try {
+    localStorage.setItem(STUDIO_CACHE_KEY, JSON.stringify(profile));
+  } catch (e) {}
   saveStudioProfileToCloud(profile).catch((err) => {
     console.error('Failed to save studio profile to Cloud Firestore:', err);
   });
@@ -85,6 +178,9 @@ export function getSystemConfig(): SystemConfig {
 
 export function saveSystemConfig(config: SystemConfig): void {
   cloudConfigCache = config;
+  try {
+    localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify(config));
+  } catch (e) {}
   saveSystemConfigToCloud(config).catch((err) => {
     console.error('Failed to save system config to Cloud Firestore:', err);
   });

@@ -265,6 +265,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <TrendingUp className="w-4 h-4" />
                 <span>បូកសរុបចំណូល</span>
               </button>
+
+              {/* Settings */}
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-medium text-xs whitespace-nowrap transition-all cursor-pointer ${
+                  activeTab === 'settings'
+                    ? 'bg-blue-600 text-white font-bold shadow-sm'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+                <span>កំណត់ Studio</span>
+              </button>
             </>
           )}
 

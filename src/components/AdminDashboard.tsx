@@ -3,7 +3,8 @@ import {
   UserAccount, 
   UserRole, 
   UserStatus, 
-  SystemConfig 
+  SystemConfig,
+  StudioProfile
 } from '../types';
 import { 
   getUsers, 
@@ -15,6 +16,7 @@ import {
   getInvoices,
   STORAGE_EVENT 
 } from '../lib/storage';
+import { compressImageToDataUrl } from '../lib/imageUtils';
 import { 
   ShieldCheck, 
   Users, 
@@ -39,17 +41,38 @@ import {
   ToggleRight,
   Shield,
   Activity,
-  UserPlus
+  UserPlus,
+  Camera,
+  Upload,
+  Link as LinkIcon,
+  Sparkles
 } from 'lucide-react';
 
 interface AdminDashboardProps {
   currentUser: UserAccount | null;
+  studio?: StudioProfile;
+  onSaveStudio?: (profile: StudioProfile) => void;
 }
 
-export function AdminDashboard({ currentUser }: AdminDashboardProps) {
+export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashboardProps) {
   const [users, setUsers] = useState<UserAccount[]>(getUsers());
   const [sysConfig, setSysConfig] = useState<SystemConfig>(getSystemConfig());
   const invoices = getInvoices();
+
+  // Local System & Studio Config state
+  const [systemTitle, setSystemTitle] = useState(sysConfig.systemTitle || 'វិក្កយបត្រ Digital Pro');
+  const [studioKhmerName, setStudioKhmerName] = useState(studio?.khmerName || 'ជាងថតរូប ឡាយ មីន');
+  const [studioEngName, setStudioEngName] = useState(studio?.name || 'Digital Pro Studio');
+  const [systemLogo, setSystemLogo] = useState(studio?.logoUrl || '');
+  const [logoUrlInput, setLogoUrlInput] = useState('');
+
+  useEffect(() => {
+    if (studio) {
+      setStudioKhmerName(studio.khmerName || '');
+      setStudioEngName(studio.name || '');
+      setSystemLogo(studio.logoUrl || '');
+    }
+  }, [studio]);
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,6 +81,7 @@ export function AdminDashboard({ currentUser }: AdminDashboardProps) {
   // Modals state
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserAccount | null>(null);
+  const [userToDelete, setUserToDelete] = useState<UserAccount | null>(null);
 
   // Form State for Add / Edit
   const [formName, setFormName] = useState('');
@@ -165,17 +189,32 @@ export function AdminDashboard({ currentUser }: AdminDashboardProps) {
     showNotification('success', editingUser ? 'បានកែប្រែគណនីជោគជ័យ!' : 'បានបង្កើតគណនីថ្មីជោគជ័យ!');
   };
 
-  // Delete User
+  // Delete User Trigger (Opens custom confirm modal)
   const handleDeleteUser = (user: UserAccount) => {
     if (user.id === currentUser?.id) {
       showNotification('error', 'អ្នកមិនអាចលុបគណនី Admin ដែលកំពុងប្រើប្រាស់បានទេ!');
       return;
     }
+    setUserToDelete(user);
+  };
 
-    if (window.confirm(`តើអ្នកប្រាកដជាចង់លុបគណនី "${user.name}" (${user.username}) នេះមែនទេ?`)) {
-      deleteUser(user.id);
-      refreshUsersList();
-      showNotification('success', 'បានលុបគណនីសមាជិកជោគជ័យ!');
+  // Confirm Delete User Action
+  const confirmDeleteUser = () => {
+    if (!userToDelete) return;
+
+    if (userToDelete.id === currentUser?.id) {
+      showNotification('error', 'អ្នកមិនអាចលុបគណនី Admin ដែលកំពុងប្រើប្រាស់បានទេ!');
+      setUserToDelete(null);
+      return;
+    }
+
+    deleteUser(userToDelete.id);
+    refreshUsersList();
+    showNotification('success', `បានលុបគណនី "${userToDelete.name}" (${userToDelete.username}) ចេញពី Cloud Firestore រួចរាល់!`);
+    setUserToDelete(null);
+    if (isUserModalOpen && editingUser?.id === userToDelete.id) {
+      setIsUserModalOpen(false);
+      setEditingUser(null);
     }
   };
 
@@ -188,6 +227,55 @@ export function AdminDashboard({ currentUser }: AdminDashboardProps) {
       refreshUsersList();
       showNotification('success', `បានកំណត់ពាក្យសម្ងាត់ថ្មីជា "${newPass}" ជោគជ័យ!`);
     }
+  };
+
+  // Admin Upload System Logo (compressed data URL)
+  const handleLogoUploadAdmin = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const compressed = await compressImageToDataUrl(file, 500, 500, 0.85);
+      setSystemLogo(compressed);
+      showNotification('success', 'បានបញ្ចូល និងបង្រួមរូបភាព Logo លើ Cloud!');
+    } catch (err) {
+      console.error('Failed to compress logo image:', err);
+      showNotification('error', 'មានបញ្ហាក្នុងការ Upload រូបភាព Logo!');
+    }
+  };
+
+  // Admin Add Logo via Link URL
+  const handleAddLogoUrlAdmin = () => {
+    if (!logoUrlInput.trim()) return;
+    setSystemLogo(logoUrlInput.trim());
+    setLogoUrlInput('');
+    showNotification('success', 'បានប្តូរ Logo តាម Link URL!');
+  };
+
+  // Save System & Studio Settings to Cloud Firestore
+  const handleSaveSystemAndStudio = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Update System Config
+    const updatedSysConfig: SystemConfig = {
+      ...sysConfig,
+      systemTitle: systemTitle.trim() || 'វិក្កយបត្រ Digital Pro'
+    };
+    setSysConfig(updatedSysConfig);
+    saveSystemConfig(updatedSysConfig);
+
+    // 2. Update Studio Profile
+    if (studio && onSaveStudio) {
+      const updatedStudio: StudioProfile = {
+        ...studio,
+        khmerName: studioKhmerName.trim() || studio.khmerName,
+        name: studioEngName.trim() || studio.name,
+        logoUrl: systemLogo
+      };
+      onSaveStudio(updatedStudio);
+    }
+
+    showNotification('success', 'បានរក្សាទុកឈ្មោះប្រព័ន្ធ និង Logo ទៅកាន់ Cloud Firestore រួចរាល់!');
   };
 
   // Toggle Public Registration Setting
@@ -514,12 +602,140 @@ export function AdminDashboard({ currentUser }: AdminDashboardProps) {
 
       {/* SYSTEM CONFIGURATION PANEL */}
       <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-        <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
-          <Settings className="w-5 h-5 text-blue-600" />
-          <h2 className="text-base font-bold text-slate-900">
-            ការកំណត់ប្រព័ន្ធទូទៅ (System Configurations)
-          </h2>
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center space-x-2">
+            <Settings className="w-5 h-5 text-blue-600" />
+            <h2 className="text-base font-bold text-slate-900">
+              ការកំណត់ប្រព័ន្ធទូទៅ និង Logo (System Configurations & Branding)
+            </h2>
+          </div>
+          <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+            Cloud Sync Enabled
+          </span>
         </div>
+
+        {/* System Title & Logo Form */}
+        <form onSubmit={handleSaveSystemAndStudio} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-5">
+          <div className="flex items-center space-x-2 text-xs font-bold text-slate-800 border-b border-slate-200 pb-2">
+            <Camera className="w-4 h-4 text-blue-600" />
+            <span>កែប្រែ Logo និងឈ្មោះប្រព័ន្ធបង្ហាញលើ Cloud (System Branding)</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            
+            {/* System / Studio Logo Box */}
+            <div className="flex flex-col items-center justify-center p-4 bg-white rounded-xl border border-slate-200 shadow-sm text-center space-y-3">
+              <div className="relative group">
+                {systemLogo ? (
+                  <img
+                    src={systemLogo}
+                    alt="System Logo"
+                    className="w-24 h-24 rounded-2xl object-cover ring-4 ring-blue-500/20 shadow-md"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-2xl shadow-md">
+                    <Camera className="w-10 h-10" />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5 w-full">
+                <label className="inline-flex items-center justify-center space-x-1.5 w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-colors">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>ជ្រើសរើស Logo ថ្មី</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUploadAdmin}
+                    className="hidden"
+                  />
+                </label>
+
+                {systemLogo && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSystemLogo('');
+                      showNotification('success', 'បានលុប Logo ចេញពីប្រព័ន្ធ!');
+                    }}
+                    className="text-[11px] font-bold text-rose-600 hover:underline cursor-pointer"
+                  >
+                    លុប Logo នេះចេញ
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Inputs: System Names */}
+            <div className="md:col-span-2 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    ឈ្មោះប្រព័ន្ធ / ហាង (ភាសាខ្មែរ)
+                  </label>
+                  <input
+                    type="text"
+                    value={studioKhmerName}
+                    onChange={(e) => setStudioKhmerName(e.target.value)}
+                    placeholder="ឧ. ជាងថតរូប ឡាយ មីន"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/30"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    ឈ្មោះប្រព័ន្ធ / ហាង (ភាសាអង់គ្លេស)
+                  </label>
+                  <input
+                    type="text"
+                    value={studioEngName}
+                    onChange={(e) => setStudioEngName(e.target.value)}
+                    placeholder="ឧ. Lay Mean Photography"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/30"
+                  />
+                </div>
+              </div>
+
+              {/* Logo Link URL input option */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  ឬបញ្ចូល Logo តាមរយះ Image URL (Link)
+                </label>
+                <div className="flex space-x-2">
+                  <div className="relative flex-1">
+                    <LinkIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="url"
+                      value={logoUrlInput}
+                      onChange={(e) => setLogoUrlInput(e.target.value)}
+                      placeholder="https://example.com/logo.png"
+                      className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/30"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddLogoUrlAdmin}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  >
+                    ប្រើ Link នេះ
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end pt-2">
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center space-x-2"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>រក្សាទុក Logo និងឈ្មោះប្រព័ន្ធទៅ Cloud</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </form>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
@@ -713,24 +929,94 @@ export function AdminDashboard({ currentUser }: AdminDashboardProps) {
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsUserModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition-colors cursor-pointer"
-                >
-                  បោះបង់
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow-sm transition-all cursor-pointer flex items-center space-x-1.5"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>រក្សាទុក</span>
-                </button>
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                {editingUser && editingUser.id !== currentUser?.id ? (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteUser(editingUser)}
+                    className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs rounded-lg transition-colors cursor-pointer flex items-center space-x-1.5"
+                  >
+                    <Trash2 className="w-4 h-4 text-rose-600" />
+                    <span>លុបគណនីនេះ</span>
+                  </button>
+                ) : <div />}
+
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsUserModalOpen(false)}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition-colors cursor-pointer"
+                  >
+                    បោះបង់
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow-sm transition-all cursor-pointer flex items-center space-x-1.5"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>រក្សាទុក</span>
+                  </button>
+                </div>
               </div>
 
             </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {userToDelete && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden">
+            
+            <div className="bg-rose-600 text-white p-5 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white flex items-center space-x-2">
+                <Trash2 className="w-5 h-5 text-white" />
+                <span>បញ្ជាក់ការលុបគណនីសមាជិក</span>
+              </h3>
+              <button
+                onClick={() => setUserToDelete(null)}
+                className="p-1 text-rose-200 hover:text-white rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
+                <p className="text-xs font-bold text-rose-900">
+                  តើអ្នកពិតជាចង់លុបគណនីនេះចេញពី Cloud ដែរឬទេ?
+                </p>
+                <div className="text-xs text-slate-700 space-y-1 bg-white p-3 rounded-lg border border-rose-100 font-mono">
+                  <div><strong>ឈ្មោះ:</strong> {userToDelete.name}</div>
+                  <div><strong>Username:</strong> @{userToDelete.username}</div>
+                  <div><strong>Studio:</strong> {userToDelete.studioName || '-'}</div>
+                  <div><strong>លេខទូរស័ព្ទ:</strong> {userToDelete.emailPhone}</div>
+                </div>
+                <p className="text-[11px] text-rose-700 italic">
+                  * ការលុបនេះនឹងលុបទិន្នន័យគណនីចេញពី Cloud Firestore ជារៀងរហូត ហើយមិនអាចស្តារឡើងវិញបានឡើយ!
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setUserToDelete(null)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                >
+                  បោះបង់ (Cancel)
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteUser}
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center space-x-1.5"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>លុបគណនីចេញពី Cloud</span>
+                </button>
+              </div>
+            </div>
 
           </div>
         </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StudioProfile, UserAccount } from '../types';
 import { 
   Settings, 
@@ -11,10 +11,10 @@ import {
   Download, 
   RefreshCw, 
   Sparkles,
-  ShieldAlert,
   Link as LinkIcon
 } from 'lucide-react';
 import { exportAllDataJSON, importAllDataJSON } from '../lib/storage';
+import { compressImageToDataUrl } from '../lib/imageUtils';
 
 interface StudioSettingsProps {
   studio: StudioProfile;
@@ -34,6 +34,13 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [logoUrlInput, setLogoUrlInput] = useState('');
 
+  useEffect(() => {
+    setProfile(studio);
+    if (studio.termsAndConditions) {
+      setTermsText(studio.termsAndConditions.join('\n'));
+    }
+  }, [studio]);
+
   const isAdmin = currentUser?.role === 'admin';
 
   const showToast = (msg: string) => {
@@ -41,62 +48,46 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Upload Logo handler (reads image file as data URL)
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isAdmin) return;
+  // Upload Logo handler (compresses & converts to data URL)
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 3 * 1024 * 1024) {
-      alert('រូបភាព Logo ត្រូវតែតូចជាង 3MB!');
-      return;
+    try {
+      const compressedDataUrl = await compressImageToDataUrl(file, 500, 500, 0.85);
+      setProfile((prev) => ({ ...prev, logoUrl: compressedDataUrl }));
+      showToast('បានបញ្ចូល និងបង្រួមរូបភាព Logo លើ Cloud រួចរាល់!');
+    } catch (err) {
+      console.error('Error compressing logo image:', err);
+      alert('មានបញ្ហាក្នុងការ Upload រូបភាព! សូមព្យាយាមម្តងទៀត');
     }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setProfile((prev) => ({ ...prev, logoUrl: result }));
-      showToast('បានបញ្ចូល Logo Studio ថ្មីនៅលើ Cloud រួចរាល់!');
-    };
-    reader.readAsDataURL(file);
   };
 
   // Add Logo via Image URL
   const handleAddLogoUrl = () => {
-    if (!isAdmin) return;
     if (!logoUrlInput.trim()) return;
     setProfile((prev) => ({ ...prev, logoUrl: logoUrlInput.trim() }));
     setLogoUrlInput('');
     showToast('បានប្តូរ Logo តាម Link URL រួចរាល់!');
   };
 
-  // Upload KHQR Image handler
-  const handleKhqrUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isAdmin) return;
+  // Upload KHQR Image handler (compresses & converts to data URL)
+  const handleKhqrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 3 * 1024 * 1024) {
-      alert('រូបភាព KHQR ត្រូវតែតូចជាង 3MB!');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setProfile((prev) => ({ ...prev, khqrImageUrl: result }));
+    try {
+      const compressedDataUrl = await compressImageToDataUrl(file, 500, 500, 0.85);
+      setProfile((prev) => ({ ...prev, khqrImageUrl: compressedDataUrl }));
       showToast('បានបញ្ចូលរូបភាព Bakong KHQR រួចរាល់!');
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Error compressing KHQR image:', err);
+      alert('មានបញ្ហាក្នុងការ Upload រូបភាព! សូមព្យាយាមម្តងទៀត');
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!isAdmin) {
-      alert('សិទ្ធិត្រូវបានកម្រិត! មានតែគណនី Admin ប៉ុណ្ណោះដែលអាចប្តូរការកំណត់ និង Logo បាន។');
-      return;
-    }
 
     const updatedTerms = termsText
       .split('\n')
@@ -126,7 +117,6 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
 
   // JSON Import for Cloud Restore
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isAdmin) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -144,27 +134,6 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
     reader.readAsText(file);
   };
 
-  if (!isAdmin) {
-    return (
-      <div className="max-w-4xl mx-auto p-8 bg-white rounded-3xl border border-rose-200 shadow-xl text-center space-y-4 my-8">
-        <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
-          <ShieldAlert className="w-10 h-10" />
-        </div>
-        <h2 className="text-xl font-black text-slate-900">
-          សិទ្ធិត្រូវបានកម្រិត (Admin Only Access)
-        </h2>
-        <p className="text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
-          ការកំណត់ប្រព័ន្ធ ឈ្មោះ Studio និងការប្តូរ Logo លើទំព័រ Welcome & System ត្រូវបានអនុញ្ញាតសម្រាប់តែ <span className="font-bold text-rose-600">គណនី Admin</span> ប៉ុណ្ណោះ។ គណនី Member/User ធម្មតាមិនអាចធ្វើការកែប្រែបានឡើយ។
-        </p>
-        <div className="pt-2">
-          <span className="inline-block px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200">
-            គណនីបច្ចុប្បន្នរបស់អ្នក៖ {currentUser?.name || currentUser?.username} ({currentUser?.role})
-          </span>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-5xl mx-auto">
       
@@ -181,14 +150,16 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
           <div className="flex items-center space-x-2">
             <Settings className="w-6 h-6 text-blue-600" />
             <h2 className="text-xl font-black text-slate-900">
-              ការកំណត់ប្រព័ន្ធ និង Logo (Admin Console)
+              {isAdmin ? 'ការកំណត់ប្រព័ន្ធ និង Logo (Admin Console)' : 'ការកំណត់ហាងថតរូប និង Logo (Studio Settings)'}
             </h2>
             <span className="px-2.5 py-0.5 text-xs font-black bg-blue-100 text-blue-800 rounded-md uppercase">
-              Admin Exclusive
+              {isAdmin ? 'Admin Console' : 'Member Studio'}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            កែប្រែ Logo, ឈ្មោះ Studio, ព័ត៌មាន Welcome Page, Bakong KHQR និងរក្សាទុកទៅ Cloud Firestore ដោយស្វ័យប្រវត្តិ
+            {isAdmin 
+              ? 'កែប្រែ Logo, ឈ្មោះ Studio, Bakong KHQR និងរក្សាទុកទៅ Cloud Firestore ដោយស្វ័យប្រវត្តិ'
+              : 'កែប្រែ Logo ហាងថតរូប, ឈ្មោះហាង, Bakong KHQR, និងព័ត៌មានគណនីសម្រាប់បង្ហាញលើវិក្កយបត្ររបស់អ្នក'}
           </p>
         </div>
 
@@ -208,7 +179,7 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
         <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
           <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2 border-b border-slate-100 pb-3">
             <Camera className="w-4 h-4 text-amber-500" />
-            <span>រូបភាព Logo របស់ Studio (បង្ហាញលើ Welcome Page & Invoices)</span>
+            <span>រូបភាព Logo របស់ Studio (បង្ហាញលើ Invoices & Profile)</span>
           </h3>
 
           <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -272,7 +243,7 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
               </div>
 
               <p className="text-[11px] text-slate-400">
-                រូបភាព Logo នឹងបង្ហាញនៅលើ Header, Welcome Portal, និងនៅលើវិក្កយបត្រទាំងអស់
+                រូបភាព Logo នឹងបង្ហាញនៅលើ Header គណនីរបស់អ្នក និងនៅលើវិក្កយបត្រទាំងអស់
               </p>
             </div>
           </div>
@@ -332,13 +303,13 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
       <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-5">
         <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2">
           <Building className="w-5 h-5 text-amber-500" />
-          <span>ព័ត៌មានប្រព័ន្ធ និង Studio (System & Studio Profile)</span>
+          <span>ព័ត៌មានហាងថតរូប និងប្រព័ន្ធ (Studio Profile)</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-              ឈ្មោះប្រព័ន្ធ / Studio (ភាសាខ្មែរ)
+              ឈ្មោះហាង / Studio (ភាសាខ្មែរ)
             </label>
             <input
               type="text"
@@ -351,7 +322,7 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-              ឈ្មោះប្រព័ន្ធ / Studio (English)
+              ឈ្មោះហាង / Studio (English)
             </label>
             <input
               type="text"
@@ -364,7 +335,7 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-              ពាក្យស្លោក / Tagline (បង្ហាញលើ Welcome Page)
+              ពាក្យស្លោក / Tagline
             </label>
             <input
               type="text"
