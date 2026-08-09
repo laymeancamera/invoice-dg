@@ -1,11 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 export type Language = 'km' | 'en';
 
 export const translations = {
   km: {
-    // Navigation
+    // Navigation & Common Header
     welcome: 'ទំព័រដើម',
+    welcomePortal: 'ទំព័រដើម Welcome',
     invoices: 'បញ្ជីវិក្កយបត្រ',
     createInvoice: 'បង្កើតវិក្កយបត្រ',
     packages: 'កញ្ចប់សេវាកម្ម',
@@ -21,6 +22,8 @@ export const translations = {
     noLimit: 'No Limit',
     todayInvoices: 'ថ្ងៃនេះ',
     installApp: 'ដំឡើង App',
+    superAppPro: 'SUPER APP PRO',
+    memberStudio: 'Member Studio',
 
     // Buttons & Common
     save: 'រក្សាទុក',
@@ -45,16 +48,75 @@ export const translations = {
     confirm: 'បញ្ជាក់',
     back: 'ត្រឡប់ក្រោយ',
     loading: 'កំពុងដំណើរការ...',
+    accounts: 'គណនី',
 
-    // Welcome Page
-    welcomeTitle: 'ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ Studio រូបថត',
-    welcomeSub: 'បង្កើត និងគ្រប់គ្រងវិក្កយបត្រថតរូប វីដេអូ និងអាពាហ៍ពិពាហ៍យ៉ាងរហ័ស ងាយស្រួល និងមានអាជីព',
-    quickStart: 'ចាប់ផ្តើមបង្កើតវិក្កយបត្រ',
-    viewAllInvoices: 'មើលវិក្កយបត្រទាំងអស់',
-    totalInvoicesCount: 'វិក្កយបត្រសរុប',
-    totalRevenueCount: 'ចំណូលសរុប',
-    paidInvoicesCount: 'បានទូទាត់រួច',
-    unpaidInvoicesCount: 'នៅខ្វះប្រាក់',
+    // Welcome Page Section
+    publicPortal: 'Public Portal',
+    aboutSystem: 'អំពីប្រព័ន្ធ',
+    usageStats: 'ស្ថិតិប្រើប្រាស់',
+    systemServices: 'សេវាកម្មប្រព័ន្ធ',
+    getStarted: 'ចាប់ផ្តើមប្រើប្រាស់',
+    launchApp: 'ចូលទៅកាន់ App ថតរូប (Launch App)',
+    signUpApp: 'ចុះឈ្មោះចូលប្រើប្រាស់ App (Sign Up)',
+    heroTag: 'ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ និងសេវាកម្មថតរូបអាជីព',
+    heroTitlePart1: 'វិក្កយបត្រ',
+    heroTitlePart2: 'Digital Pro',
+    heroSubtitle: 'ផ្ទាំង Portal ផ្លូវការសម្រាប់ជាងថតរូប',
+    heroDesc: 'ដំណោះស្រាយឌីជីថលឆ្លាតវៃ រចនាឡើងយ៉ាងពិសេសសម្រាប់ ជាងថតរូប (Photographers), អ្នកថតវីដេអូ, និង ហាងថតរូបមង្គលការ (Wedding Photo Studios) ក្នុងប្រទេសកម្ពុជា។ បង្កើតវិក្កយបត្រស្អាត, បញ្ចូល KHQR ទូទាត់, ផ្ញើទៅ Telegram រហ័ស, និងតាមដានចំណូលបានយ៉ាងងាយស្រួល។',
+    systemNormal: 'ប្រព័ន្ធដំណើរការធម្មតា',
+    sloganQuote: '"រៀបចំវិក្កយបត្រឱ្យមានរបៀបរៀបរយ ស្អាត និងគួរឱ្យជឿជាក់"',
+    
+    // Stats Section
+    livePlatformMetrics: 'Live Platform Metrics',
+    statsTitle: 'ស្ថិតិអ្នកប្រើប្រាស់ និងការប្រើប្រាស់ប្រព័ន្ធ',
+    statsSub: 'ទិន្នន័យជាក់ស្តែងនៃចំនួនអ្នកប្រើប្រាស់សរុប អ្នកកំពុងប្រើប្រាស់ និងវិក្កយបត្រក្នុងប្រព័ន្ធ',
+    totalUsers: 'អ្នកប្រើប្រាស់សរុប',
+    registeredInSystem: 'បានចុះឈ្មោះក្នុងប្រព័ន្ធ',
+    activeUsers: 'កំពុងប្រើប្រាស់ (Active)',
+    activeNormal: 'សកម្មភាពធម្មតា',
+    inactiveUsers: 'ផ្អាកប្រើប្រាស់ (Inactive)',
+    pausedTemp: 'ផ្អាកជាបណ្តោះអាសន្ន',
+    createdInvoices: 'វិក្កយបត្របានបង្កើត',
+    totalSystemWide: 'សរុបទូទាំងប្រព័ន្ធ',
+
+    // About Section
+    aboutTag: 'អំពីប្រព័ន្ធ (About Digital Pro)',
+    aboutTitle: 'ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រដែលយល់ច្បាស់ពីតម្រូវការជាងថតរូប',
+    aboutDesc: 'ជាងថតរូប និងម្ចាស់ Studio ជាច្រើនតែងតែជួបការលំបាកក្នុងការកត់ត្រាប្រាក់កក់ថ្ងៃការ, ការរៀបចំបញ្ជីអាវ/អាល់ប៊ុមក្នុងកញ្ចប់ Pre-wedding, និងការផ្ញើវិក្កយបត្រអោយអតិថិជន។ Digital Pro ត្រូវបានបង្កើតឡើងដើម្បីដោះស្រាយបញ្ហាទាំងនេះដោយផ្ទាល់!',
+    pillar1Title: 'រចនាសម្រាប់ Photography Standard',
+    pillar1Desc: 'មានមុខងារជ្រើសរើសកញ្ចប់ Pre-wedding, Wedding Day, Combo និងការបន្ថែមជម្រើសអាវ ៣ឈុត, អាល់ប៊ុម VIP 30x40cm ដោយស្វ័យប្រវត្តិ។',
+    pillar2Title: 'ទូទាត់ Bakong KHQR ងាយស្រួល',
+    pillar2Desc: 'អតិថិជនអាច Scan បង់ប្រាក់កក់ ឬប្រាក់នៅសល់តាម Bakong KHQR ដោយផ្ទាល់នៅលើផ្ទាំងវិក្កយបត្រយ៉ាងរហ័ស។',
+    pillar3Title: 'Telegram Instant Direct Share',
+    pillar3Desc: 'ផ្ញើសារសង្ខេបវិក្កយបត្រ និង Link/រូបភាព ទៅកាន់ Telegram អតិថិជនបានត្រឹមតែចុច ១ដង មិនបាច់វាយអក្សរឡើងវិញ។',
+
+    // Services Section
+    servicesTag: 'Services & Capabilities',
+    servicesTitle: 'សេវាកម្ម និងសមត្ថភាពរបស់ប្រព័ន្ធ (Platform Services)',
+    servicesSub: 'រៀបចំឡើងយ៉ាងពេញលេញ ដើម្បីជួយអោយការងារថតរូបរបស់អ្នកកាន់តែមានអាជីព',
+    service1Title: '១. បង្កើតវិក្កយបត្រឌីជីថល (Digital Invoices)',
+    service1Desc: 'បញ្ចូលឈ្មោះកូនកំលោះ កូនក្រមុំ, លេខទូរស័ព្ទ, ថ្ងៃរៀបការ, ទីតាំង, គណនាប្រាក់កក់ និងប្រាក់នៅខ្វះស្វ័យប្រវត្តិ។',
+    service2Title: '២. កញ្ចប់សេវាកម្ម (Package Templates)',
+    service2Desc: 'កំណត់កញ្ចប់តម្លៃរហ័ស Pre-wedding, Wedding Day, Combo Special ជាមួយបញ្ជីសម្ភារក្នុងកញ្ចប់យ៉ាងលម្អិត។',
+    service3Title: '៣. Export PNG HD & Print',
+    service3Desc: 'ទាញយកវិក្កយបត្រជារូបភាព PNG HD កម្រិតច្បាស់ខ្ពស់សម្រាប់ផ្ញើតាម Chat ឬបោះពុម្ព (Print) ជាក្រដាស។',
+    service4Title: '៤. ផ្ញើតាម Telegram 1-Click',
+    service4Desc: 'ចែករំលែកព័ត៌មានវិក្កយបត្រទៅ Telegram អតិថិជនដោយស្វ័យប្រវត្តិ រួមទាំងអត្ថបទសង្ខេបភាសាខ្មែរ។',
+    service5Title: '៥. របាយការណ៍ចំណូល & អតិថិជន',
+    service5Desc: 'តាមដានចំណូលប្រចាំខែ, ប្រាក់ដែលអតិថិជននៅខ្វះ (Balance Due), និងប្រវត្តិការកត់ត្រាប្រាក់កក់។',
+    service6Title: '៦. ប្រព័ន្ធគ្រប់គ្រងសមាជិក (Admin Console)',
+    service6Desc: 'គ្រប់គ្រងគណនីសមាជិក, ស្ថានភាពប្រើប្រាស់ Active/Inactive, និងការកំណត់ប្រព័ន្ធទាំងមូល។',
+
+    // CTA Section
+    ctaTitle: 'ចាប់ផ្តើមរៀបចំវិក្កយបត្រ និងសេវាកម្មថតរូបរបស់អ្នកឥឡូវនេះ',
+    ctaSub: 'គ្មានការស្មុគស្មាញ បង្កើតវិក្កយបត្រដំបូងរបស់អ្នកបានត្រឹមតែ 1 នាទីប៉ុណ្ណោះ!',
+    ctaButtonLaunch: 'ចូលទៅកាន់ App ថតរូបឥឡូវនេះ (Launch App)',
+    ctaButtonSignUp: 'ចុះឈ្មោះជាសមាជិកដើម្បីប្រើប្រាស់ App',
+
+    // Footer
+    copyright: '© 2026 វិក្កយបត្រ Digital Pro. All rights reserved.',
+    developedBy: 'អភិវឌ្ឍដោយ (Developer):',
+    footerSubText: 'ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រជាងថតរូបអាជីព • គាំទ្រទូទាត់ Bakong KHQR & Telegram Export',
 
     // Invoice List
     invoiceListTitle: 'គ្រប់គ្រងបញ្ជីវិក្កយបត្រ',
@@ -99,6 +161,9 @@ export const translations = {
     upgradeSuccess: 'សំណើ Upgrade ($10) ត្រូវបានផ្ញើរួចរាល់!',
 
     // Settings
+    systemLanguageSetting: 'ភាសាប្រើប្រាស់ក្នុងប្រព័ន្ធ (System Language)',
+    studioSettingsTitle: 'ការកំណត់ហាងថតរូប (Studio Settings)',
+    adminSettingsTitle: 'ការកំណត់ប្រព័ន្ធ និង Logo (Admin Console)',
     studioProfile: 'ព័ត៌មាន Studio',
     studioName: 'ឈ្មោះ Studio / ហាង',
     studioPhone: 'លេខទូរស័ព្ទ Studio',
@@ -109,6 +174,7 @@ export const translations = {
     uploadKhqr: 'Upload រូបភាព Bakong KHQR',
     userLogoNotice: 'ℹ️ រូបភាព Logo នេះនឹងបង្ហាញតែនៅលើវិក្កយបត្រក្នុងគណនីរបស់អ្នកប៉ុណ្ណោះ',
     adminLogoNotice: 'រូបភាព Logo នេះនឹងបង្ហាញលើ Header ប្រព័ន្ធ និងវិក្កយបត្រទាំងអស់ (System Wide)',
+    saveToCloud: 'រក្សាទុកទៅ Cloud',
 
     // Packages
     packagesTitle: 'គ្រប់គ្រងកញ្ចប់សេវាកម្ម (Packages List)',
@@ -128,7 +194,7 @@ export const translations = {
     totalBalance: 'ប្រាក់នៅខ្វះសរុប',
 
     // Admin
-    adminManageUsers: 'គ្រប់គ្រងសមាជិក',
+    adminManageUsers: 'គ្រប់គ្រងសមាជិក (Admin Console)',
     adminUpgradeReqs: 'សំណើ Upgrade ($10)',
     plan: 'គម្រោង',
     freePlan: 'Free (20 វិក្កយបត្រ/ថ្ងៃ)',
@@ -137,8 +203,9 @@ export const translations = {
     addUserBtn: '+ បង្កើតគណនីថ្មី',
   },
   en: {
-    // Navigation
+    // Navigation & Common Header
     welcome: 'Home',
+    welcomePortal: 'Welcome Portal',
     invoices: 'Invoices List',
     createInvoice: 'New Invoice',
     packages: 'Packages',
@@ -154,6 +221,8 @@ export const translations = {
     noLimit: 'No Limit',
     todayInvoices: 'Today',
     installApp: 'Install App',
+    superAppPro: 'SUPER APP PRO',
+    memberStudio: 'Member Studio',
 
     // Buttons & Common
     save: 'Save',
@@ -178,16 +247,75 @@ export const translations = {
     confirm: 'Confirm',
     back: 'Back',
     loading: 'Loading...',
+    accounts: 'Accounts',
 
-    // Welcome Page
-    welcomeTitle: 'Photography Studio Invoice Management System',
-    welcomeSub: 'Create and manage wedding, photo, and video invoices quickly, easily, and professionally',
-    quickStart: 'Start Creating Invoices',
-    viewAllInvoices: 'View All Invoices',
-    totalInvoicesCount: 'Total Invoices',
-    totalRevenueCount: 'Total Revenue',
-    paidInvoicesCount: 'Paid Invoices',
-    unpaidInvoicesCount: 'Pending Balance',
+    // Welcome Page Section
+    publicPortal: 'Public Portal',
+    aboutSystem: 'About System',
+    usageStats: 'Usage Stats',
+    systemServices: 'Services',
+    getStarted: 'Get Started',
+    launchApp: 'Launch App',
+    signUpApp: 'Sign Up for App',
+    heroTag: 'Professional Photography Invoice & Studio Management',
+    heroTitlePart1: 'Digital Pro',
+    heroTitlePart2: 'Invoice System',
+    heroSubtitle: 'Official Invoicing Portal for Photographers',
+    heroDesc: 'Smart digital solution tailored specifically for photographers, videographers, and wedding photo studios in Cambodia. Create clean invoices, attach KHQR payment codes, share directly to Telegram, and track revenue seamlessly.',
+    systemNormal: 'System Operational',
+    sloganQuote: '"Organize invoices neatly, beautifully and reliably"',
+
+    // Stats Section
+    livePlatformMetrics: 'Live Platform Metrics',
+    statsTitle: 'Platform Usage & User Statistics',
+    statsSub: 'Real-time statistics of registered members, active users, and generated invoices in the system',
+    totalUsers: 'Total Users',
+    registeredInSystem: 'Registered Accounts',
+    activeUsers: 'Active Users',
+    activeNormal: 'Normal Activity',
+    inactiveUsers: 'Inactive Users',
+    pausedTemp: 'Temporarily Paused',
+    createdInvoices: 'Invoices Created',
+    totalSystemWide: 'System-wide Total',
+
+    // About Section
+    aboutTag: 'About System',
+    aboutTitle: 'Invoice Management Designed for Photographers Needs',
+    aboutDesc: 'Photographers and studio owners often struggle with tracking wedding deposits, setting up dress/album items in Pre-wedding packages, and sending bills to clients. Digital Pro was built directly to solve these issues effortlessly!',
+    pillar1Title: 'Designed for Photography Standards',
+    pillar1Desc: 'Built-in support for Pre-wedding, Wedding Day, and Combo packages with automated dress items and VIP album options.',
+    pillar2Title: 'Easy Bakong KHQR Payment',
+    pillar2Desc: 'Clients can scan and pay deposits or balance dues via Bakong KHQR directly on the digital invoice canvas.',
+    pillar3Title: 'Telegram Instant Direct Share',
+    pillar3Desc: 'Send invoice summaries, links, and high-res images to client Telegram chats with just 1-click.',
+
+    // Services Section
+    servicesTag: 'Services & Capabilities',
+    servicesTitle: 'Platform Services & Capabilities',
+    servicesSub: 'Comprehensive feature set designed to elevate your photography business professionalism',
+    service1Title: '1. Digital Invoices Creation',
+    service1Desc: 'Fill groom/bride names, phone, event date, location, and automatically calculate deposits and balance dues.',
+    service2Title: '2. Package Templates',
+    service2Desc: 'Set quick package prices for Pre-wedding, Wedding Day, and Special Combos with detailed item checklists.',
+    service3Title: '3. Export PNG HD & Print',
+    service3Desc: 'Download crisp HD PNG invoice images for messaging apps or print hardcopies effortlessly.',
+    service4Title: '4. Telegram 1-Click Sharing',
+    service4Desc: 'Auto-share invoice details with localized summaries straight into customer Telegram chats.',
+    service5Title: '5. Revenue & Customer Reports',
+    service5Desc: 'Track monthly income, pending balance dues from clients, and complete deposit log histories.',
+    service6Title: '6. Member Management (Admin Console)',
+    service6Desc: 'Manage member user accounts, active/inactive statuses, and system-wide configurations.',
+
+    // CTA Section
+    ctaTitle: 'Start Organizing Your Photography Invoices Today',
+    ctaSub: 'No complexity — create your very first professional invoice in under 1 minute!',
+    ctaButtonLaunch: 'Launch Photography App Now',
+    ctaButtonSignUp: 'Sign Up to Access App',
+
+    // Footer
+    copyright: '© 2026 Digital Pro Invoice. All rights reserved.',
+    developedBy: 'Developer:',
+    footerSubText: 'Professional Photography Invoicing System • Supports Bakong KHQR & Telegram Export',
 
     // Invoice List
     invoiceListTitle: 'Invoice Management',
@@ -232,6 +360,9 @@ export const translations = {
     upgradeSuccess: 'Upgrade request submitted successfully!',
 
     // Settings
+    systemLanguageSetting: 'System Language Setting',
+    studioSettingsTitle: 'Studio Settings',
+    adminSettingsTitle: 'System Settings & Logo (Admin)',
     studioProfile: 'Studio Profile',
     studioName: 'Studio Name',
     studioPhone: 'Studio Phone',
@@ -242,6 +373,7 @@ export const translations = {
     uploadKhqr: 'Upload Bakong KHQR Image',
     userLogoNotice: 'ℹ️ This logo will be displayed on your account invoices only',
     adminLogoNotice: 'This logo will be displayed system-wide across all invoices',
+    saveToCloud: 'Save to Cloud',
 
     // Packages
     packagesTitle: 'Packages Management',
@@ -261,7 +393,7 @@ export const translations = {
     totalBalance: 'Total Pending Balance',
 
     // Admin
-    adminManageUsers: 'User Management',
+    adminManageUsers: 'User Management (Admin)',
     adminUpgradeReqs: 'Upgrade Requests ($10)',
     plan: 'Plan',
     freePlan: 'Free (20 Invoices/Day)',
@@ -299,7 +431,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const t = translations[lang];
+  const t = translations[lang] || translations.km;
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>

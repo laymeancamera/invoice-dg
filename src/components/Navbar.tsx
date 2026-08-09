@@ -96,24 +96,24 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* User Profile & Quick Action Buttons */}
             <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
               
-              {/* Language Switcher Toggle (Desktop header view; mobile view accessible in Studio Settings) */}
+              {/* Language Switcher Toggle */}
               <button
                 onClick={toggleLanguage}
-                className="hidden md:inline-flex items-center space-x-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
+                className="inline-flex items-center space-x-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
                 title={lang === 'km' ? 'Switch to English' : 'ប្តូរទៅភាសាខ្មែរ'}
               >
                 <Globe className="w-3.5 h-3.5 text-amber-400" />
                 <span className="font-extrabold">{lang === 'km' ? '🇰🇭 ខ្មែរ' : '🇬🇧 EN'}</span>
               </button>
 
-              {/* Add to Home Screen / Install App Button (Desktop header view; mobile view accessible in Studio Settings) */}
+              {/* Add to Home Screen / Install App Button */}
               <button
                 onClick={() => setIsPwaModalOpen(true)}
                 className="hidden md:inline-flex items-center space-x-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow-sm border border-emerald-400/30 text-[11px] sm:text-xs transition-all active:scale-95 cursor-pointer"
                 title="ដំឡើង App ទៅលើ Home Screen ដូច App Original"
               >
                 <Smartphone className="w-3.5 h-3.5 text-emerald-200 animate-pulse" />
-                <span className="hidden sm:inline">{lang === 'km' ? 'ដំឡើង App' : 'Install App'}</span>
+                <span className="hidden sm:inline">{t.installApp}</span>
               </button>
 
               {/* Return to Public Portal Button (Only if not logged in) */}
@@ -123,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className="hidden sm:inline-flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold px-3 py-1.5 rounded-lg border border-slate-700 text-xs transition-colors cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5 text-amber-400" />
-                  <span>ទំព័រដើម Welcome</span>
+                  <span>{t.welcomePortal}</span>
                 </button>
               )}
 
@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="hidden md:inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3.5 py-1.5 rounded-lg shadow-sm active:scale-95 transition-all text-xs cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>បង្កើតវិក្កយបត្រថ្មី</span>
+                <span>{t.createInvoice}</span>
               </button>
             )}
 

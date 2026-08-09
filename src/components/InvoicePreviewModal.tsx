@@ -370,7 +370,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
         <div className="p-2 sm:p-6 overflow-auto bg-slate-100/90 flex-1 flex justify-center items-start w-full min-h-[350px]">
           {/* PRINTABLE HIGH-RES INVOICE CARD CONTAINER WITH TRANSFORM SCALE */}
           <div 
-            className="transition-transform duration-150 origin-top flex justify-center shrink-0"
+            className="transition-transform duration-150 origin-top flex justify-center shrink-0 shadow-2xl rounded-xl overflow-hidden"
             style={{
               transform: `scale(${zoomLevel})`,
               transformOrigin: 'top center',
@@ -379,7 +379,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
               marginBottom: zoomLevel < 1 ? `-${Math.max(0, 1123 * (1 - zoomLevel))}px` : '1rem'
             }}
           >
-            <div ref={invoiceRef} className="bg-white shadow-2xl rounded-xl overflow-hidden shrink-0" style={{ width: '794px' }}>
+            <div ref={invoiceRef} className="bg-white rounded-xl border border-slate-200 overflow-hidden shrink-0" style={{ width: '794px' }}>
               <InvoiceTemplateRender
                 templateId={activeTemplate}
                 invoice={invoice}

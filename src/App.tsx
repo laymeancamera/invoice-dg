@@ -363,10 +363,16 @@ export default function App() {
           </main>
 
           {/* Internal Dashboard Footer */}
-          <footer className="bg-slate-900 text-slate-400 border-t border-slate-800 py-6 text-center text-xs mt-auto">
-            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-              <p>© {new Date().getFullYear()} {studio.khmerName || studio.name}. All rights reserved.</p>
-              <p className="text-slate-500">
+          <footer className="bg-slate-900 text-slate-400 border-t border-slate-800 py-6 text-center text-xs mt-auto font-kantumruy">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-slate-300 font-medium">
+                <p>© 2026 វិក្កយបត្រ Digital Pro. All rights reserved.</p>
+                <span className="hidden sm:inline text-slate-700">•</span>
+                <p className="text-amber-400 font-bold">
+                  អភិវឌ្ឍដោយ (Developer): <span className="text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700 font-mono font-extrabold tracking-wide">LAY-MEAN</span>
+                </p>
+              </div>
+              <p className="text-slate-500 text-[11px]">
                 ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រជាងថតរូប • គាំទ្រទូទាត់ Bakong KHQR & ផ្ញើតាម Telegram
               </p>
             </div>

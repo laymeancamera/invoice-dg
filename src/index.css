@@ -2,17 +2,17 @@
 
 @layer base {
   :root {
-    font-family: 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Kantumruy Pro', 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     line-height: 1.6;
     font-weight: 400;
   }
 
   *, ::before, ::after {
-    font-family: 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Kantumruy Pro', 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   body {
-    font-family: 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Kantumruy Pro', 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     color: #0f172a;
     background-color: #f8fafc;
     -webkit-font-smoothing: antialiased;
@@ -34,21 +34,21 @@
   }
 
   input, textarea, select, button {
-    font-family: 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Kantumruy Pro', 'Noto Sans Khmer', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   /* Custom font family utilities */
   .font-moul {
-    font-family: 'Moul', 'Noto Sans Khmer', cursive, sans-serif;
+    font-family: 'Moul', 'Kantumruy Pro', 'Noto Sans Khmer', cursive, sans-serif;
     line-height: 1.8;
   }
 
   .font-koh {
-    font-family: 'Koh Santepheap', 'Noto Sans Khmer', serif;
+    font-family: 'Koh Santepheap', 'Kantumruy Pro', 'Noto Sans Khmer', serif;
   }
 
   .font-battambang {
-    font-family: 'Battambang', 'Noto Sans Khmer', sans-serif;
+    font-family: 'Battambang', 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif;
   }
 
   .font-kantumruy {
@@ -56,7 +56,7 @@
   }
 
   .font-khmer {
-    font-family: 'Noto Sans Khmer', sans-serif;
+    font-family: 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif;
   }
 }
 

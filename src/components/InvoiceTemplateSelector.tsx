@@ -459,7 +459,7 @@ export function InvoiceTemplateRender({
   // Dedicated Pro Forma Corporate Blue Layout
   if (templateId === 'proforma_corporate') {
     return (
-      <div className="bg-white text-slate-900 w-[794px] min-h-[1123px] p-8 sm:p-10 rounded-xl border border-slate-200 shadow-2xl flex flex-col justify-between font-sans shrink-0 box-border print:w-[210mm] print:min-h-[297mm] print:p-8 print:shadow-none print:border-none print:rounded-none">
+      <div className="bg-white text-slate-900 w-[794px] min-h-[1123px] p-8 sm:p-10 rounded-xl border border-slate-200 flex flex-col justify-between font-sans shrink-0 box-border print:w-[210mm] print:min-h-[297mm] print:p-8 print:shadow-none print:border-none print:rounded-none">
         {/* Main Content Area */}
         <div className="space-y-6 flex-1 flex flex-col justify-start">
           
@@ -473,10 +473,10 @@ export function InvoiceTemplateRender({
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/digital_pro_logo.svg';
                 }}
-                className="w-20 h-20 rounded-xl object-contain ring-1 ring-slate-200 bg-white p-1"
+                className="w-20 h-20 rounded-xl object-contain border border-slate-200 bg-white p-1"
               />
               <div>
-                <h1 className="text-xl font-black text-slate-900">
+                <h1 className="text-xl font-black text-slate-900 font-kantumruy">
                   {studio.khmerName || studio.name}
                 </h1>
                 <p className="text-xs font-bold text-blue-600 uppercase tracking-wide">
@@ -487,7 +487,7 @@ export function InvoiceTemplateRender({
 
             {/* Right Invoice Title & Metadata */}
             <div className="text-right space-y-1">
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-kantumruy">
                 {displayTitle}
               </h2>
               <div className="text-xs font-medium text-slate-600 space-y-0.5 pt-1">
@@ -499,11 +499,11 @@ export function InvoiceTemplateRender({
           </div>
 
           {/* From / Bill To Grid */}
-          <div className="grid grid-cols-2 gap-8 text-xs bg-slate-50/70 p-4 rounded-xl border border-slate-200/80">
+          <div className="grid grid-cols-2 gap-8 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
             {/* From */}
             <div className="space-y-1">
               <span className="font-bold text-blue-600 text-[11px] block uppercase tracking-wider">From</span>
-              <h3 className="text-sm font-extrabold text-slate-900">{studio.khmerName || studio.name}</h3>
+              <h3 className="text-sm font-extrabold text-slate-900 font-kantumruy">{studio.khmerName || studio.name}</h3>
               <p className="text-slate-600 font-medium">{studio.name}</p>
               <p className="text-slate-600">📞 {studio.phone} {studio.secondaryPhone ? ` / ${studio.secondaryPhone}` : ''}</p>
               {studio.address && <p className="text-slate-600">📍 {studio.address}</p>}
@@ -514,7 +514,7 @@ export function InvoiceTemplateRender({
             <div className="space-y-2">
               <div>
                 <span className="font-bold text-blue-600 text-[11px] block uppercase tracking-wider">Bill to</span>
-                <h3 className="text-sm font-extrabold text-slate-900">{invoice.customerName}</h3>
+                <h3 className="text-sm font-extrabold text-slate-900 font-kantumruy">{invoice.customerName}</h3>
                 <p className="text-slate-600 font-medium">📞 {invoice.customerPhone}</p>
               </div>
               
@@ -529,12 +529,12 @@ export function InvoiceTemplateRender({
           </div>
 
           {/* Table */}
-          <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm flex-1 min-h-[220px]">
+          <div className="border border-slate-200 rounded-xl overflow-hidden flex-1 min-h-[220px]">
             <table className="w-full text-left text-xs">
               <thead className="bg-[#007aff] text-white font-bold uppercase text-[11px]">
                 <tr>
                   <th className="py-3 px-4 w-12 text-center">#</th>
-                  <th className="py-3 px-4">DESCRIPTION</th>
+                  <th className="py-3 px-4 font-kantumruy">DESCRIPTION</th>
                   <th className="py-3 px-4 text-center w-20">QTY</th>
                   <th className="py-3 px-4 text-right w-28">RATE ($)</th>
                   <th className="py-3 px-4 text-right w-28">TOTAL ($)</th>
@@ -544,7 +544,7 @@ export function InvoiceTemplateRender({
                 {invoice.items.map((item, idx) => (
                   <tr key={item.id || `item-${idx}`} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}>
                     <td className="py-3 px-4 text-center font-bold text-slate-400">{idx + 1}</td>
-                    <td className="py-3 px-4 font-semibold text-slate-900 whitespace-pre-line leading-relaxed">
+                    <td className="py-3 px-4 font-semibold text-slate-900 whitespace-pre-line leading-relaxed font-kantumruy">
                       {item.description}
                     </td>
                     <td className="py-3 px-4 text-center font-medium text-slate-700">{item.quantity}</td>
@@ -560,31 +560,31 @@ export function InvoiceTemplateRender({
           <div className="flex justify-between items-start gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-200">
             {/* Payment Instruction */}
             <div className="space-y-2.5 flex-1 max-w-md">
-              <p className="font-black text-slate-900 text-xs uppercase tracking-wider text-blue-700">Payment instruction</p>
+              <p className="font-black text-slate-900 text-xs uppercase tracking-wider text-blue-700 font-kantumruy">Payment instruction</p>
               {studio.khqrImageUrl ? (
-                <div className="flex items-center space-x-4 bg-white p-3.5 rounded-2xl border border-slate-300 shadow-sm">
-                  <img src={studio.khqrImageUrl} alt="Bakong KHQR" crossOrigin="anonymous" className="w-28 h-28 object-contain rounded-xl shrink-0 ring-1 ring-slate-200" />
-                  <div className="text-xs text-slate-700 space-y-1">
+                <div className="flex items-center space-x-4 bg-white p-3.5 rounded-2xl border border-slate-200">
+                  <img src={studio.khqrImageUrl} alt="Bakong KHQR" crossOrigin="anonymous" className="w-28 h-28 object-contain rounded-xl shrink-0 border border-slate-200 bg-white p-1" />
+                  <div className="text-xs text-slate-700 space-y-1 font-kantumruy">
                     <p className="font-black text-slate-900 text-sm">Bakong KHQR Payment</p>
                     <p className="font-bold text-slate-800">Account: <span className="font-extrabold text-blue-900">{studio.bankAccountName || studio.name}</span></p>
-                    <p className="font-mono font-bold text-xs text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-300 inline-block shadow-inner">{studio.bankAccountNumber}</p>
-                    <p className="text-[11px] font-medium text-slate-500 pt-0.5">សូមស្កេន KHQR ដើម្បីធ្វើការទូទាត់ប្រាក់</p>
+                    <p className="font-mono font-bold text-xs text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-300 inline-block">{studio.bankAccountNumber}</p>
+                    <p className="text-[11px] font-medium text-slate-600 pt-0.5">សូមស្កេន KHQR ដើម្បីធ្វើការទូទាត់ប្រាក់</p>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-600 leading-relaxed font-medium bg-white p-3 rounded-xl border border-slate-200">
+                <p className="text-xs text-slate-600 leading-relaxed font-medium bg-white p-3 rounded-xl border border-slate-200 font-kantumruy">
                   សូមធ្វើការទូទាត់ប្រាក់កក់ ឬប្រាក់សរុបតាមរយៈគណនីធនាគារ ឬ KHQR របស់ស្ទូឌីយោ។
                 </p>
               )}
               {invoice.notes && (
-                <p className="text-xs text-slate-600 italic pt-1.5 border-t border-slate-200 font-medium">
+                <p className="text-xs text-slate-600 italic pt-1.5 border-t border-slate-200 font-medium font-kantumruy">
                   {invoice.notes}
                 </p>
               )}
             </div>
 
             {/* Right Totals Box */}
-            <div className="w-72 space-y-2 text-xs">
+            <div className="w-72 space-y-2 text-xs font-kantumruy">
               <div className="flex justify-between text-slate-600 font-medium">
                 <span>Subtotal:</span>
                 <span className="font-semibold">${invoice.subtotal.toFixed(2)}</span>
@@ -605,7 +605,7 @@ export function InvoiceTemplateRender({
               </div>
 
               {/* Balance Due Highlight Box */}
-              <div className="bg-[#f0f7ff] border border-blue-200 text-slate-900 font-black p-3 rounded-xl flex justify-between items-center text-sm shadow-sm mt-1">
+              <div className="bg-[#f0f7ff] border border-blue-200 text-slate-900 font-black p-3 rounded-xl flex justify-between items-center text-sm mt-1">
                 <span>Balance Due:</span>
                 <span className="text-blue-700 text-base font-extrabold">${invoice.balanceDue.toFixed(2)}</span>
               </div>
@@ -618,7 +618,7 @@ export function InvoiceTemplateRender({
         </div>
 
         {/* Footer & Signatures */}
-        <div className="pt-6 border-t border-slate-200 mt-6 space-y-5">
+        <div className="pt-6 border-t border-slate-200 mt-6 space-y-5 font-kantumruy">
           <div className="grid grid-cols-2 gap-8 text-center text-xs">
             <div className="space-y-10">
               <p className="font-bold text-slate-700 uppercase tracking-wider">
@@ -653,7 +653,7 @@ export function InvoiceTemplateRender({
   }
 
   return (
-    <div className={`bg-white text-slate-900 w-[794px] min-h-[1123px] p-8 sm:p-10 rounded-xl border ${theme.cardBorder} shadow-2xl flex flex-col justify-between font-sans shrink-0 box-border print:w-[210mm] print:min-h-[297mm] print:p-8 print:shadow-none print:border-none print:rounded-none`}>
+    <div className={`bg-white text-slate-900 w-[794px] min-h-[1123px] p-8 sm:p-10 rounded-xl border ${theme.cardBorder} flex flex-col justify-between font-sans shrink-0 box-border print:w-[210mm] print:min-h-[297mm] print:p-8 print:shadow-none print:border-none print:rounded-none`}>
       {/* Top and Content Area */}
       <div className="space-y-6 flex-1 flex flex-col justify-start">
         
@@ -667,10 +667,10 @@ export function InvoiceTemplateRender({
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/digital_pro_logo.svg';
                 }}
-                className="w-14 h-14 rounded-xl object-cover ring-2 ring-slate-200 shadow-sm"
+                className="w-14 h-14 rounded-xl object-cover border border-slate-200 bg-white p-0.5"
               />
               <div>
-                <h1 className="text-2xl font-black tracking-tight text-slate-900">
+                <h1 className="text-2xl font-black tracking-tight text-slate-900 font-kantumruy">
                   {studio.khmerName || studio.name}
                 </h1>
                 <p className={`text-xs ${theme.primaryText} font-bold uppercase tracking-wider`}>
@@ -678,7 +678,7 @@ export function InvoiceTemplateRender({
                 </p>
               </div>
             </div>
-            <div className="text-xs text-slate-600 space-y-1 pt-1 font-medium">
+            <div className="text-xs text-slate-600 space-y-1 pt-1 font-medium font-kantumruy">
               <div className="flex items-center space-x-2">
                 <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <span>ទូរស័ព្ទ: {studio.phone} {studio.secondaryPhone ? ` / ${studio.secondaryPhone}` : ''}</span>
@@ -693,26 +693,26 @@ export function InvoiceTemplateRender({
           </div>
 
           <div className="text-right space-y-1.5">
-            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase tracking-tight font-kantumruy">
               {displayTitle}
             </h2>
             <p className={`text-sm font-black ${theme.primaryText} tracking-wider font-mono`}>
               INVOICE: #{invoice.invoiceNumber}
             </p>
             <div className="pt-1">
-              <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-800 border border-amber-300 uppercase shadow-sm">
+              <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-800 border border-amber-300 uppercase font-kantumruy">
                 <Clock className="w-3.5 h-3.5" />
                 <span>{invoice.status === 'paid' ? 'បានទូទាត់រួច' : invoice.status === 'deposit' ? 'បានកក់ប្រាក់' : 'មិនទាន់ទូទាត់'}</span>
               </span>
             </div>
-            <p className="text-xs text-slate-500 pt-0.5">
+            <p className="text-xs text-slate-500 pt-0.5 font-kantumruy">
               ថ្ងៃចេញវិក្កយបត្រ: <span className="font-bold text-slate-800">{invoice.issueDate}</span>
             </p>
           </div>
         </div>
 
         {/* Customer & Event Details Box */}
-        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-2 gap-6">
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-2 gap-6 font-kantumruy">
           <div className="space-y-1">
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               អតិថិជន (Client Details)
@@ -747,8 +747,8 @@ export function InvoiceTemplateRender({
         </div>
 
         {/* Items Table */}
-        <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm flex-1 min-h-[200px]">
-          <table className="w-full text-left text-xs">
+        <div className="border border-slate-200 rounded-xl overflow-hidden flex-1 min-h-[200px]">
+          <table className="w-full text-left text-xs font-kantumruy">
             <thead className={`${theme.headerBg} ${theme.headerText} font-bold uppercase`}>
               <tr>
                 <th className="py-3 px-4 w-12 text-center">ល.រ</th>
@@ -773,11 +773,11 @@ export function InvoiceTemplateRender({
         </div>
 
         {/* Payment & KHQR Details Box */}
-        <div className="flex justify-between items-start gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-200">
+        <div className="flex justify-between items-start gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 font-kantumruy">
           {/* KHQR code preview & Bank account */}
           {studio.khqrImageUrl ? (
-            <div className="flex items-center space-x-4 bg-white p-3.5 rounded-2xl border border-slate-300 shadow-sm flex-1 max-w-md">
-              <img src={studio.khqrImageUrl} alt="Bakong KHQR" crossOrigin="anonymous" className="w-28 h-28 object-contain rounded-xl border border-slate-200 bg-white p-1 shadow-sm shrink-0" />
+            <div className="flex items-center space-x-4 bg-white p-3.5 rounded-2xl border border-slate-300 flex-1 max-w-md">
+              <img src={studio.khqrImageUrl} alt="Bakong KHQR" crossOrigin="anonymous" className="w-28 h-28 object-contain rounded-xl border border-slate-200 bg-white p-1 shrink-0" />
               <div className="text-xs text-slate-700 space-y-1.5">
                 <p className="font-black text-slate-900 text-sm">Bakong KHQR Payment</p>
                 <p className="font-bold text-slate-800">ឈ្មោះគណនី: <span className="font-extrabold text-slate-950">{studio.bankAccountName || 'LAY MEAN'}</span></p>
@@ -832,7 +832,7 @@ export function InvoiceTemplateRender({
       </div>
 
       {/* A4 Bottom Footer & Signatures (Always at the bottom of the A4 page) */}
-      <div className="pt-8 border-t border-slate-200 mt-6 space-y-6">
+      <div className="pt-8 border-t border-slate-200 mt-6 space-y-6 font-kantumruy">
         {/* Signatures */}
         <div className="grid grid-cols-2 gap-8 text-center text-xs">
           <div className="space-y-12">

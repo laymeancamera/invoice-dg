@@ -122,25 +122,25 @@ export function WelcomePage({
                 onClick={() => scrollToSection('about')} 
                 className="hover:text-white transition-colors cursor-pointer"
               >
-                អំពីប្រព័ន្ធ
+                {t.aboutSystem}
               </button>
               <button 
                 onClick={() => scrollToSection('stats')} 
                 className="hover:text-white transition-colors cursor-pointer"
               >
-                ស្ថិតិប្រើប្រាស់
+                {t.usageStats}
               </button>
               <button 
                 onClick={() => scrollToSection('services')} 
                 className="hover:text-white transition-colors cursor-pointer"
               >
-                សេវាកម្មប្រព័ន្ធ
+                {t.systemServices}
               </button>
               <button 
                 onClick={() => scrollToSection('cta')} 
                 className="hover:text-white transition-colors cursor-pointer"
               >
-                ចាប់ផ្តើមប្រើប្រាស់
+                {t.getStarted}
               </button>
             </nav>
 
@@ -182,7 +182,7 @@ export function WelcomePage({
                   </div>
                   <button
                     onClick={onLogout}
-                    title="ចាកចេញ (Logout)"
+                    title={t.logout}
                     className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-700 rounded-lg transition-colors cursor-pointer ml-1"
                   >
                     <LogOut className="w-4 h-4" />
@@ -195,14 +195,14 @@ export function WelcomePage({
                     className="px-4 py-2 text-xs font-bold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-all cursor-pointer flex items-center space-x-1.5"
                   >
                     <LogIn className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Sign In</span>
+                    <span>{t.login}</span>
                   </button>
                   <button
                     onClick={() => onOpenAuth('register')}
                     className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-md transition-all cursor-pointer flex items-center space-x-1.5"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
-                    <span>Sign Up</span>
+                    <span>{t.register}</span>
                   </button>
                 </div>
               )}
@@ -211,6 +211,13 @@ export function WelcomePage({
 
             {/* Mobile Menu Button */}
             <div className="flex md:hidden items-center space-x-2">
+              <button
+                onClick={() => setLang(lang === 'km' ? 'en' : 'km')}
+                className="p-1.5 text-xs font-bold text-amber-300 bg-slate-800 border border-slate-700 rounded-lg flex items-center space-x-1"
+              >
+                <Globe className="w-3.5 h-3.5 text-amber-400" />
+                <span>{lang === 'km' ? '🇰🇭' : '🇬🇧'}</span>
+              </button>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 text-slate-300 hover:text-white rounded-lg bg-slate-800 border border-slate-700"
@@ -229,34 +236,41 @@ export function WelcomePage({
               onClick={() => scrollToSection('about')}
               className="block w-full text-left py-2 text-xs font-bold text-slate-300 hover:text-white"
             >
-              អំពីប្រព័ន្ធ
+              {t.aboutSystem}
             </button>
             <button
               onClick={() => scrollToSection('stats')}
               className="block w-full text-left py-2 text-xs font-bold text-slate-300 hover:text-white"
             >
-              ស្ថិតិប្រើប្រាស់
+              {t.usageStats}
             </button>
             <button
               onClick={() => scrollToSection('services')}
               className="block w-full text-left py-2 text-xs font-bold text-slate-300 hover:text-white"
             >
-              សេវាកម្មប្រព័ន្ធ
+              {t.systemServices}
             </button>
             <div className="pt-2 border-t border-slate-800 flex flex-col space-y-2">
+              <button
+                onClick={() => setLang(lang === 'km' ? 'en' : 'km')}
+                className="w-full py-2 text-xs font-bold bg-slate-800 text-amber-300 rounded-lg text-center flex items-center justify-center space-x-2"
+              >
+                <Globe className="w-4 h-4 text-amber-400" />
+                <span>{lang === 'km' ? '🇰🇭 ភាសាខ្មែរ (KM)' : '🇬🇧 English (EN)'}</span>
+              </button>
               {!currentUser ? (
                 <>
                   <button
                     onClick={() => { setMobileMenuOpen(false); onOpenAuth('login'); }}
                     className="w-full py-2.5 text-xs font-bold bg-slate-800 text-white rounded-lg text-center"
                   >
-                    Sign In
+                    {t.login}
                   </button>
                   <button
                     onClick={() => { setMobileMenuOpen(false); onOpenAuth('register'); }}
                     className="w-full py-2.5 text-xs font-bold bg-emerald-600 text-white rounded-lg text-center"
                   >
-                    Sign Up
+                    {t.register}
                   </button>
                 </>
               ) : (
@@ -264,7 +278,7 @@ export function WelcomePage({
                   onClick={() => { setMobileMenuOpen(false); onLogout(); }}
                   className="w-full py-2.5 text-xs font-bold bg-rose-600/80 text-white rounded-lg text-center"
                 >
-                  ចាកចេញ (Logout)
+                  {t.logout}
                 </button>
               )}
             </div>
@@ -285,20 +299,18 @@ export function WelcomePage({
             
             <div className="inline-flex items-center space-x-2 bg-blue-500/10 border border-blue-500/30 px-4 py-2 rounded-full text-xs font-bold text-blue-400">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ និងសេវាកម្មថតរូបអាជីព</span>
+              <span>{t.heroTag}</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight">
-              វិក្កយបត្រ <span className="text-blue-400">Digital Pro</span> <br />
+              {t.heroTitlePart1} <span className="text-blue-400">{t.heroTitlePart2}</span> <br />
               <span className="text-2xl sm:text-4xl text-slate-200 font-extrabold mt-2 block">
-                ផ្ទាំង Portal ផ្លូវការសម្រាប់ជាងថតរូប
+                {t.heroSubtitle}
               </span>
             </h1>
 
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              ដំណោះស្រាយឌីជីថលឆ្លាតវៃ រចនាឡើងយ៉ាងពិសេសសម្រាប់ ជាងថតរូប (Photographers), 
-              អ្នកថតវីដេអូ, និង ហាងថតរូបមង្គលការ (Wedding Photo Studios) ក្នុងប្រទេសកម្ពុជា។ 
-              បង្កើតវិក្កយបត្រស្អាត, បញ្ចូល KHQR ទូទាត់, ផ្ញើទៅ Telegram រហ័ស, និងតាមដានចំណូលបានយ៉ាងងាយស្រួល។
+              {t.heroDesc}
             </p>
 
             {/* Action Buttons */}
@@ -309,7 +321,7 @@ export function WelcomePage({
                 className="inline-flex items-center space-x-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black px-7 py-3.5 rounded-2xl shadow-xl shadow-blue-600/30 transition-all text-sm cursor-pointer border border-blue-400/40"
               >
                 <LayoutDashboard className="w-5 h-5" />
-                <span>{currentUser ? 'ចូលទៅកាន់ App ថតរូប (Launch App)' : 'ចុះឈ្មោះចូលប្រើប្រាស់ App (Sign Up)'}</span>
+                <span>{currentUser ? t.launchApp : t.signUpApp}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -319,13 +331,11 @@ export function WelcomePage({
                   className="inline-flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-6 py-3.5 rounded-2xl shadow-lg transition-all text-sm cursor-pointer"
                 >
                   <ShieldCheck className="w-5 h-5" />
-                  <span>គ្រប់គ្រង Admin Console</span>
+                  <span>{t.adminConsole}</span>
                 </button>
               ) : null}
 
             </div>
-
-
 
           </div>
 
@@ -336,7 +346,7 @@ export function WelcomePage({
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">ប្រព័ន្ធដំណើរការធម្មតា</span>
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">{t.systemNormal}</span>
                 </div>
                 <span className="text-[11px] px-2.5 py-0.5 bg-blue-500/20 text-blue-400 font-extrabold rounded-full border border-blue-500/30">
                   v2.5 Release
@@ -350,7 +360,7 @@ export function WelcomePage({
                     <QrCode className="w-4 h-4 text-rose-400" />
                     <span className="text-slate-200 font-bold">Bakong KHQR Code</span>
                   </div>
-                  <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded text-[11px]">រួចរាល់</span>
+                  <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded text-[11px]">{lang === 'km' ? 'រួចរាល់' : 'Ready'}</span>
                 </div>
 
                 <div className="flex items-center justify-between p-3 bg-slate-950/80 rounded-xl border border-slate-800">
@@ -371,7 +381,7 @@ export function WelcomePage({
               </div>
 
               <div className="pt-2 text-center text-[11px] text-slate-400 italic border-t border-slate-800">
-                "រៀបចំវិក្កយបត្រឱ្យមានរបៀបរៀបរយ ស្អាត និងគួរឱ្យជឿជាក់"
+                {t.sloganQuote}
               </div>
 
             </div>
@@ -386,13 +396,13 @@ export function WelcomePage({
           
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-xs font-bold px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/30 uppercase">
-              Live Platform Metrics
+              {t.livePlatformMetrics}
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
-              ស្ថិតិអ្នកប្រើប្រាស់ និងការប្រើប្រាស់ប្រព័ន្ធ
+              {t.statsTitle}
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
-              ទិន្នន័យជាក់ស្តែងនៃចំនួនអ្នកប្រើប្រាស់សរុប អ្នកកំពុងប្រើប្រាស់ និងវិក្កយបត្រក្នុងប្រព័ន្ធ
+              {t.statsSub}
             </p>
           </div>
 
@@ -401,56 +411,56 @@ export function WelcomePage({
             {/* Card 1: Total Users */}
             <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-2 shadow-lg">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold">អ្នកប្រើប្រាស់សរុប</span>
+                <span className="text-xs font-bold">{t.totalUsers}</span>
                 <Users className="w-5 h-5 text-blue-400" />
               </div>
               <div className="text-3xl font-black text-white">
-                {totalUsersCount} <span className="text-xs font-normal text-slate-400">គណនី</span>
+                {totalUsersCount} <span className="text-xs font-normal text-slate-400">{t.accounts}</span>
               </div>
               <p className="text-[11px] text-slate-500">
-                បានចុះឈ្មោះក្នុងប្រព័ន្ធ
+                {t.registeredInSystem}
               </p>
             </div>
 
             {/* Card 2: Active Users */}
             <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-2 shadow-lg">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold text-emerald-400">កំពុងប្រើប្រាស់ (Active)</span>
+                <span className="text-xs font-bold text-emerald-400">{t.activeUsers}</span>
                 <UserCheck className="w-5 h-5 text-emerald-400" />
               </div>
               <div className="text-3xl font-black text-emerald-400">
-                {activeUsersCount} <span className="text-xs font-normal text-slate-400">គណនី</span>
+                {activeUsersCount} <span className="text-xs font-normal text-slate-400">{t.accounts}</span>
               </div>
               <p className="text-[11px] text-emerald-500/80 font-medium">
-                សកម្មភាពធម្មតា
+                {t.activeNormal}
               </p>
             </div>
 
             {/* Card 3: Inactive Users */}
             <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-2 shadow-lg">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold text-amber-400">ផ្អាកប្រើប្រាស់ (Inactive)</span>
+                <span className="text-xs font-bold text-amber-400">{t.inactiveUsers}</span>
                 <UserX className="w-5 h-5 text-amber-400" />
               </div>
               <div className="text-3xl font-black text-amber-400">
-                {inactiveUsersCount} <span className="text-xs font-normal text-slate-400">គណនី</span>
+                {inactiveUsersCount} <span className="text-xs font-normal text-slate-400">{t.accounts}</span>
               </div>
               <p className="text-[11px] text-amber-500/80 font-medium">
-                ផ្អាកជាបណ្តោះអាសន្ន
+                {t.pausedTemp}
               </p>
             </div>
 
             {/* Card 4: Invoices Created */}
             <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-2 shadow-lg">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-bold">វិក្កយបត្របានបង្កើត</span>
+                <span className="text-xs font-bold">{t.createdInvoices}</span>
                 <FileText className="w-5 h-5 text-sky-400" />
               </div>
               <div className="text-3xl font-black text-white">
-                {totalInvoicesCount} <span className="text-xs font-normal text-slate-400">វិក្កយបត្រ</span>
+                {totalInvoicesCount} <span className="text-xs font-normal text-slate-400">{t.invoices}</span>
               </div>
               <p className="text-[11px] text-slate-500">
-                សរុបទូទាំងប្រព័ន្ធ
+                {t.totalSystemWide}
               </p>
             </div>
 
@@ -466,15 +476,13 @@ export function WelcomePage({
           <div className="max-w-3xl space-y-3">
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-full text-xs font-bold">
               <HeartHandshake className="w-4 h-4" />
-              <span>អំពីប្រព័ន្ធ (About PhotoStudio Pro)</span>
+              <span>{t.aboutTag}</span>
             </div>
             <h2 className="text-2xl sm:text-4xl font-black text-white">
-              ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រដែលយល់ច្បាស់ពីតម្រូវការជាងថតរូប
+              {t.aboutTitle}
             </h2>
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              ជាងថតរូប និងម្ចាស់ Studio ជាច្រើនតែងតែជួបការលំបាកក្នុងការកត់ត្រាប្រាក់កក់ថ្ងៃការ, 
-              ការរៀបចំបញ្ជីអាវ/អាល់ប៊ុមក្នុងកញ្ចប់ Pre-wedding, និងការផ្ញើវិក្កយបត្រអោយអតិថិជន។ 
-              <strong className="text-blue-400 font-bold">PhotoStudio Pro</strong> ត្រូវបានបង្កើតឡើងដើម្បីដោះស្រាយបញ្ហាទាំងនេះដោយផ្ទាល់!
+              {t.aboutDesc}
             </p>
           </div>
 
@@ -486,10 +494,10 @@ export function WelcomePage({
                 <Camera className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-white text-base">
-                រចនាសម្រាប់ Photography Standard
+                {t.pillar1Title}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                មានមុខងារជ្រើសរើសកញ្ចប់ Pre-wedding, Wedding Day, Combo និងការបន្ថែមជម្រើសអាវ ៣ឈុត, អាល់ប៊ុម VIP 30x40cm ដោយស្វ័យប្រវត្តិ។
+                {t.pillar1Desc}
               </p>
             </div>
 
@@ -498,10 +506,10 @@ export function WelcomePage({
                 <QrCode className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-white text-base">
-                ទូទាត់ Bakong KHQR ងាយស្រួល
+                {t.pillar2Title}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                អតិថិជនអាច Scan បង់ប្រាក់កក់ ឬប្រាក់នៅសល់តាម Bakong KHQR ដោយផ្ទាល់នៅលើផ្ទាំងវិក្កយបត្រយ៉ាងរហ័ស។
+                {t.pillar2Desc}
               </p>
             </div>
 
@@ -510,10 +518,10 @@ export function WelcomePage({
                 <Send className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-white text-base">
-                Telegram Instant Direct Share
+                {t.pillar3Title}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                ផ្ញើសារសង្ខេបវិក្កយបត្រ និង Link/រូបភាព ទៅកាន់ Telegram អតិថិជនបានត្រឹមតែចុច ១ដង មិនបាច់វាយអក្សរឡើងវិញ។
+                {t.pillar3Desc}
               </p>
             </div>
 
@@ -528,13 +536,13 @@ export function WelcomePage({
           
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-xs font-bold px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/30 uppercase">
-              Services & Capabilities
+              {t.servicesTag}
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-white">
-              សេវាកម្ម និងសមត្ថភាពរបស់ប្រព័ន្ធ (Platform Services)
+              {t.servicesTitle}
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
-              រៀបចំឡើងយ៉ាងពេញលេញ ដើម្បីជួយអោយការងារថតរូបរបស់អ្នកកាន់តែមានអាជីព
+              {t.servicesSub}
             </p>
           </div>
 
@@ -546,10 +554,10 @@ export function WelcomePage({
                 <FileText className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-white">
-                ១. បង្កើតវិក្កយបត្រឌីជីថល (Digital Invoices)
+                {t.service1Title}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                បញ្ចូលឈ្មោះកូនកំលោះ កូនក្រមុំ, លេខទូរស័ព្ទ, ថ្ងៃរៀបការ, ទីតាំង, គណនាប្រាក់កក់ និងប្រាក់នៅខ្វះស្វ័យប្រវត្តិ។
+                {t.service1Desc}
               </p>
             </div>
 
@@ -559,10 +567,10 @@ export function WelcomePage({
                 <Package className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-white">
-                ២. កញ្ចប់សេវាកម្ម (Package Templates)
+                {t.service2Title}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                កំណត់កញ្ចប់តម្លៃរហ័ស Pre-wedding, Wedding Day, Combo Special ជាមួយបញ្ជីសម្ភារក្នុងកញ្ចប់យ៉ាងលម្អិត។
+                {t.service2Desc}
               </p>
             </div>
 
@@ -572,10 +580,10 @@ export function WelcomePage({
                 <Download className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-white">
-                ៣. Export PNG HD & Print
+                {t.service3Title}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                ទាញយកវិក្កយបត្រជារូបភាព PNG HD កម្រិតច្បាស់ខ្ពស់សម្រាប់ផ្ញើតាម Chat ឬបោះពុម្ព (Print) ជាក្រដាស។
+                {t.service3Desc}
               </p>
             </div>
 
@@ -585,10 +593,10 @@ export function WelcomePage({
                 <Send className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-white">
-                ៤. ផ្ញើតាម Telegram 1-Click
+                {t.service4Title}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                ចែករំលែកព័ត៌មានវិក្កយបត្រទៅ Telegram អតិថិជនដោយស្វ័យប្រវត្តិ រួមទាំងអត្ថបទសង្ខេបភាសាខ្មែរ។
+                {t.service4Desc}
               </p>
             </div>
 
@@ -598,10 +606,10 @@ export function WelcomePage({
                 <BarChart3 className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-white">
-                ៥. របាយការណ៍ចំណូល & អតិថិជន
+                {t.service5Title}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                តាមដានចំណូលប្រចាំខែ, ប្រាក់ដែលអតិថិជននៅខ្វះ (Balance Due), និងប្រវត្តិការកត់ត្រាប្រាក់កក់។
+                {t.service5Desc}
               </p>
             </div>
 
@@ -611,10 +619,10 @@ export function WelcomePage({
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-white">
-                ៦. ប្រព័ន្ធគ្រប់គ្រងសមាជិក (Admin Console)
+                {t.service6Title}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                គ្រប់គ្រងគណនីសមាជិក, ស្ថានភាពប្រើប្រាស់ Active/Inactive, និងការកំណត់ប្រព័ន្ធទាំងមូល។
+                {t.service6Desc}
               </p>
             </div>
 
@@ -629,10 +637,10 @@ export function WelcomePage({
           
           <div className="space-y-3 relative z-10 max-w-2xl mx-auto">
             <h2 className="text-2xl sm:text-4xl font-black text-white">
-              ចាប់ផ្តើមរៀបចំវិក្កយបត្រ និងសេវាកម្មថតរូបរបស់អ្នកឥឡូវនេះ
+              {t.ctaTitle}
             </h2>
             <p className="text-xs sm:text-sm text-slate-300">
-              គ្មានការស្មុគស្មាញ បង្កើតវិក្កយបត្រដំបូងរបស់អ្នកបានត្រឹមតែ 1 នាទីប៉ុណ្ណោះ!
+              {t.ctaSub}
             </p>
           </div>
 
@@ -642,7 +650,7 @@ export function WelcomePage({
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-blue-600/40 transition-all cursor-pointer flex items-center space-x-2 border border-blue-400/40"
             >
               <LayoutDashboard className="w-5 h-5" />
-              <span>{currentUser ? 'ចូលទៅកាន់ App ថតរូបឥឡូវនេះ (Launch App)' : 'ចុះឈ្មោះជាសមាជិកដើម្បីប្រើប្រាស់ App'}</span>
+              <span>{currentUser ? t.ctaButtonLaunch : t.ctaButtonSignUp}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
@@ -652,7 +660,7 @@ export function WelcomePage({
                 className="px-6 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-2xl border border-slate-700 transition-all cursor-pointer flex items-center space-x-2"
               >
                 <UserPlus className="w-4 h-4 text-emerald-400" />
-                <span>ចុះឈ្មោះជាសមាជិក (Sign Up)</span>
+                <span>{t.register}</span>
               </button>
             )}
           </div>
@@ -661,25 +669,28 @@ export function WelcomePage({
       </section>
 
       {/* 7. STANDALONE PUBLIC FOOTER */}
-      <footer className="mt-auto bg-slate-900 border-t border-slate-800 py-8 text-xs text-slate-400">
+      <footer className="mt-auto bg-slate-900 border-t border-slate-800 py-8 text-xs text-slate-400 font-kantumruy">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           
           <div className="flex items-center space-x-3">
-            <Camera className="w-5 h-5 text-blue-400" />
-            <div>
-              <span className="font-bold text-white">វិក្កយបត្រ Digital Pro</span>
-              <p className="text-[11px] text-slate-500">© 2026 LAY MEAN . All rights reserved.</p>
+            <Camera className="w-5 h-5 text-blue-400 shrink-0" />
+            <div className="space-y-0.5">
+              <span className="font-bold text-white text-sm">វិក្កយបត្រ Digital Pro</span>
+              <p className="text-[11px] text-slate-300">{t.copyright}</p>
+              <p className="text-[11px] text-amber-400 font-bold">
+                {t.developedBy} <span className="text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700 font-mono font-extrabold">LAY-MEAN</span>
+              </p>
             </div>
           </div>
 
           <div className="text-center md:text-right text-[11px] text-slate-500 space-y-1">
-            <p>ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រជាងថតរូបអាជីព • គាំទ្រទូទាត់ Bakong KHQR & Telegram Export</p>
+            <p>{t.footerSubText}</p>
             <button
               onClick={() => setIsPwaModalOpen(true)}
               className="inline-flex items-center space-x-1 text-emerald-400 hover:text-emerald-300 font-bold underline cursor-pointer text-xs"
             >
               <Smartphone className="w-3.5 h-3.5" />
-              <span>ដំឡើង App ទៅលើ Home Screen</span>
+              <span>{t.installApp}</span>
             </button>
           </div>
 
