@@ -21,6 +21,7 @@ import {
   FileDown
 } from 'lucide-react';
 import { openTelegramShare, copyTelegramMessage } from '../lib/telegram';
+import { useLanguage } from '../lib/i18n';
 
 interface InvoiceListProps {
   invoices: Invoice[];
@@ -41,6 +42,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   onDelete,
   onCreateNew,
 }) => {
+  const { lang, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -100,35 +102,35 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            ចំនួនវិក្កយបត្រសរុប
+            {t.totalInvoicesCount}
           </p>
           <div className="flex items-baseline justify-between mt-2">
             <span className="text-2xl font-extrabold text-slate-900">
               {stats.count}
             </span>
             <span className="text-xs px-2.5 py-1 rounded-md bg-slate-100 font-medium text-slate-700">
-              វិក្កយបត្រ
+              {t.invoices}
             </span>
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            តម្លៃសេវាកម្មសរុប (Total Sales)
+            {t.totalRevenueCount}
           </p>
           <div className="flex items-baseline justify-between mt-2">
             <span className="text-2xl font-extrabold text-slate-900">
               ${stats.totalSales.toLocaleString()}
             </span>
             <span className="text-xs text-slate-500">
-              ≈ {(stats.totalSales * studio.exchangeRateKHR).toLocaleString('km-KH')} ៛
+              ≈ {(stats.totalSales * studio.exchangeRateKHR).toLocaleString(lang === 'km' ? 'km-KH' : 'en-US')} ៛
             </span>
           </div>
         </div>
 
         <div className="bg-emerald-50/60 p-5 rounded-xl shadow-sm border border-emerald-200/80">
           <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
-            ប្រាក់ទទួលបានសរុប (Collected)
+            {t.paidInvoicesCount}
           </p>
           <div className="flex items-baseline justify-between mt-2">
             <span className="text-2xl font-extrabold text-emerald-700">
@@ -140,7 +142,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
 
         <div className="bg-amber-50/60 p-5 rounded-xl shadow-sm border border-amber-200/80">
           <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
-            ប្រាក់នៅសល់ត្រូវទូទាត់ (Pending)
+            {t.unpaidInvoicesCount}
           </p>
           <div className="flex items-baseline justify-between mt-2">
             <span className="text-2xl font-extrabold text-amber-700">
@@ -161,7 +163,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ស្វែងរកតាម ឈ្មោះអតិថិជន, លេខទូរស័ព្ទ, ថ្ងៃការ, លេខវិក្កយបត្រ..."
+            placeholder={t.searchInvoicePlaceholder}
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all placeholder:text-slate-400"
           />
         </div>
@@ -176,7 +178,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            ទាំងអស់ ({invoices.length})
+            {t.filterAll} ({invoices.length})
           </button>
           
           <button
@@ -187,7 +189,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                 : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
             }`}
           >
-            បានកក់
+            {t.filterPartial}
           </button>
 
           <button
@@ -198,7 +200,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                 : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
             }`}
           >
-            ទូទាត់រួច
+            {t.filterPaid}
           </button>
 
           <button
@@ -209,7 +211,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                 : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
             }`}
           >
-            មិនទាន់ទូទាត់
+            {t.filterUnpaid}
           </button>
         </div>
 
@@ -219,7 +221,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
           className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors text-xs sm:text-sm whitespace-nowrap cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>បង្កើតថ្មី</span>
+          <span>{t.createNewInvoiceBtn}</span>
         </button>
       </div>
 

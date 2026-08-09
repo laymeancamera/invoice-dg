@@ -18,6 +18,8 @@ import {
   getCustomers,
   getCurrentUser,
   setCurrentUser,
+  saveSingleUser,
+  getUserTodayInvoiceCount,
   STORAGE_EVENT 
 } from './lib/storage';
 import { Navbar, TabType } from './components/Navbar';
@@ -32,6 +34,8 @@ import { CustomerDirectory } from './components/CustomerDirectory';
 import { PackageManager } from './components/PackageManager';
 import { RevenueAnalytics } from './components/RevenueAnalytics';
 import { StudioSettings } from './components/StudioSettings';
+import { InvoiceTemplateSelector } from './components/InvoiceTemplateSelector';
+import { UpgradeModal } from './components/UpgradeModal';
 
 export default function App() {
   const initialUser = getCurrentUser();
@@ -54,6 +58,23 @@ export default function App() {
   const [selectedInvoiceForView, setSelectedInvoiceForView] = useState<Invoice | null>(null);
   const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<Invoice | null>(null);
   const [invoiceToEdit, setInvoiceToEdit] = useState<Invoice | null>(null);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+
+  const todayInvoiceCount = currentUser ? getUserTodayInvoiceCount(currentUser.id) : 0;
+
+  // Check 20 daily invoice limit for member users
+  const checkInvoiceLimit = (): boolean => {
+    if (!currentUser) return true;
+    const isUnlimited = currentUser.role === 'admin' || currentUser.isUnlimited || currentUser.plan === 'unlimited';
+    if (isUnlimited) return true;
+
+    if (todayInvoiceCount >= 20) {
+      alert('⚠️ អ្នកបានប្រើប្រាស់អស់កំណត់ 20 វិក្កយបត្រសម្រាប់ថ្ងៃនេះហើយ! សូម Upgrade ទៅកាន់គម្រោង No Limit ($10) ដើម្បីបង្កើតបន្ថែម!');
+      setIsUpgradeModalOpen(true);
+      return false;
+    }
+    return true;
+  };
 
   // Load state from localStorage on mount & on storage change event
   const refreshData = () => {
@@ -112,6 +133,7 @@ export default function App() {
   };
 
   const handleCreateNewClick = () => {
+    if (!checkInvoiceLimit()) return;
     setInvoiceToEdit(null);
     setActiveTab('create_invoice');
   };
@@ -160,13 +182,50 @@ export default function App() {
       return;
     }
 
+    if (tab === 'create_invoice' && !invoiceToEdit) {
+      if (!checkInvoiceLimit()) return;
+    }
+
     setActiveTab(tab);
+  };
+
+  // Effective Studio Profile for current user view & invoices
+  const effectiveStudio: StudioProfile = {
+    ...studio,
+    logoUrl: currentUser?.role === 'admin' 
+      ? (studio.logoUrl || '/digital_pro_logo.svg')
+      : (currentUser?.logoUrl || '/digital_pro_logo.svg')
   };
 
   // Studio Settings Handler
   const handleSaveStudio = (prof: StudioProfile) => {
-    setStudio(prof);
-    saveStudioProfile(prof);
+    if (currentUser && currentUser.role !== 'admin') {
+      // Non-admin Member user:
+      // Preserve system studio logoUrl unchanged
+      const currentSystemStudio = getStudioProfile();
+      const userCustomLogo = prof.logoUrl;
+
+      // 1. Keep system studio logoUrl intact
+      const systemStudioToSave: StudioProfile = {
+        ...prof,
+        logoUrl: currentSystemStudio.logoUrl || '/digital_pro_logo.svg'
+      };
+      setStudio(systemStudioToSave);
+      saveStudioProfile(systemStudioToSave);
+
+      // 2. Save custom logoUrl on currentUser account
+      const updatedUser: UserAccount = {
+        ...currentUser,
+        logoUrl: userCustomLogo
+      };
+      saveSingleUser(updatedUser);
+      setCurrentUser(updatedUser);
+      setCurrentUserLocal(updatedUser);
+    } else {
+      // Admin: updates system studio profile
+      setStudio(prof);
+      saveStudioProfile(prof);
+    }
   };
 
   return (
@@ -209,6 +268,8 @@ export default function App() {
             onNewInvoiceClick={handleCreateNewClick}
             onOpenAuth={(tab) => handleOpenAuth(tab)}
             onLogout={handleLogout}
+            onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
+            todayInvoiceCount={todayInvoiceCount}
           />
 
           {/* Main App Workspace */}
@@ -218,8 +279,6 @@ export default function App() {
             {activeTab === 'admin' && (
               <AdminDashboard
                 currentUser={currentUser}
-                studio={studio}
-                onSaveStudio={handleSaveStudio}
               />
             )}
 
@@ -227,7 +286,7 @@ export default function App() {
             {activeTab === 'invoices' && (
               <InvoiceList
                 invoices={invoices}
-                studio={studio}
+                studio={effectiveStudio}
                 onView={(inv) => setSelectedInvoiceForView(inv)}
                 onEdit={handleEditInvoice}
                 onPayment={(inv) => setSelectedInvoiceForPayment(inv)}
@@ -241,7 +300,7 @@ export default function App() {
               <InvoiceForm
                 initialInvoice={invoiceToEdit}
                 packages={packages}
-                studio={studio}
+                studio={effectiveStudio}
                 onSave={handleSaveInvoice}
                 onCancel={() => {
                   setInvoiceToEdit(null);
@@ -272,15 +331,23 @@ export default function App() {
             {activeTab === 'revenue' && (
               <RevenueAnalytics
                 invoices={invoices}
-                studio={studio}
+                studio={effectiveStudio}
               />
             )}
 
             {/* Tab 6: Studio & KHQR Settings */}
             {activeTab === 'settings' && (
               <StudioSettings
-                studio={studio}
+                studio={effectiveStudio}
                 currentUser={currentUser}
+                onSaveStudio={handleSaveStudio}
+              />
+            )}
+
+            {/* Tab 7: Invoice Templates Manager */}
+            {activeTab === 'invoice_templates' && (
+              <InvoiceTemplateSelector
+                studio={effectiveStudio}
                 onSaveStudio={handleSaveStudio}
               />
             )}
@@ -312,7 +379,8 @@ export default function App() {
       {selectedInvoiceForView && (
         <InvoicePreviewModal
           invoice={selectedInvoiceForView}
-          studio={studio}
+          studio={effectiveStudio}
+          currentUser={currentUser}
           onClose={() => setSelectedInvoiceForView(null)}
           onEdit={(inv) => {
             setSelectedInvoiceForView(null);
@@ -335,6 +403,18 @@ export default function App() {
             setSelectedInvoiceForView(updated);
           }}
           onClose={() => setSelectedInvoiceForPayment(null)}
+        />
+      )}
+
+      {/* Upgrade Modal ($10 No Limit) */}
+      {isUpgradeModalOpen && currentUser && (
+        <UpgradeModal
+          currentUser={currentUser}
+          adminStudio={studio}
+          onClose={() => setIsUpgradeModalOpen(false)}
+          onSuccess={() => {
+            refreshData();
+          }}
         />
       )}
 

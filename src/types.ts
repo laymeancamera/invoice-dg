@@ -53,7 +53,9 @@ export interface Invoice {
   issueDate: string;
   dueDate?: string;
   payments: PaymentRecord[];
+  invoiceTemplate?: string;
   notes?: string;
+  invoiceTitle?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -90,6 +92,8 @@ export interface StudioProfile {
   bankName?: string;
   termsAndConditions: string[];
   exchangeRateKHR: number; // default 4100 KHR = 1 USD
+  selectedTemplateId?: string; // 'classic_blue' | 'modern_gold' | 'minimal_slate' | 'emerald_elegance' | 'royal_purple' | 'compact_receipt' | 'proforma_corporate'
+  defaultInvoiceTitle?: string; // e.g. 'វិក្កយបត្រ (Invoice)' or 'Pro Forma Invoice'
 }
 
 export type UserRole = 'admin' | 'member';
@@ -102,10 +106,29 @@ export interface UserAccount {
   emailPhone: string;
   password: string;
   studioName?: string;
+  logoUrl?: string;
   role: UserRole;
   status: UserStatus;
+  plan?: 'free' | 'unlimited';
+  isUnlimited?: boolean;
   createdAt: string;
   lastLoginAt?: string;
+}
+
+export type UpgradeRequestStatus = 'pending' | 'approved' | 'rejected';
+
+export interface UpgradeRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmailPhone: string;
+  studioName?: string;
+  paymentSlipUrl: string;
+  amount: number; // 10
+  status: UpgradeRequestStatus;
+  requestedAt: string;
+  approvedAt?: string;
+  note?: string;
 }
 
 export interface SystemConfig {

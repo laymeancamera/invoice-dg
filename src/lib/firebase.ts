@@ -157,16 +157,20 @@ export async function deleteInvoiceFromCloud(invoiceId: string): Promise<void> {
 }
 
 // 4. Packages (Cloud Real-time)
+let packagesInitialized = false;
+
 export function subscribePackages(onUpdate: (packages: PackageItem[]) => void) {
   const colRef = collection(db, COLLECTION_PACKAGES);
   return onSnapshot(colRef, (snapshot) => {
-    if (snapshot.empty) {
-      // Seed default packages if empty
+    if (snapshot.empty && !packagesInitialized) {
+      packagesInitialized = true;
+      // Seed default packages if empty on initial load
       DEFAULT_PACKAGES.forEach((pkg) => {
         setDoc(doc(db, COLLECTION_PACKAGES, pkg.id), pkg).catch(console.error);
       });
       onUpdate(DEFAULT_PACKAGES);
     } else {
+      packagesInitialized = true;
       const pkgs: PackageItem[] = [];
       snapshot.forEach((docSnap) => {
         pkgs.push(docSnap.data() as PackageItem);

@@ -22,6 +22,9 @@ import {
   FileText
 } from 'lucide-react';
 
+import { INVOICE_TEMPLATES } from './InvoiceTemplateSelector';
+import { useLanguage } from '../lib/i18n';
+
 const COMMON_INCLUSIONS = [
   'អាវ ៣ឈុត (បុរាណ ១, សកល ២)',
   'រៀបចំមេកអាប់ និងធ្វើសក់',
@@ -49,6 +52,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   onSave,
   onCancel,
 }) => {
+  const { lang, t } = useLanguage();
   const isEditing = !!initialInvoice;
 
   // Form State
@@ -65,6 +69,12 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   const [deposit, setDeposit] = useState<number>(0);
   const [notes, setNotes] = useState('');
   const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
+  const [invoiceTitle, setInvoiceTitle] = useState(
+    studio.defaultInvoiceTitle || 'វិក្កយបត្រ / INVOICE'
+  );
+  const [invoiceTemplate, setInvoiceTemplate] = useState<string>(
+    studio.selectedTemplateId || 'classic_blue'
+  );
 
   // Load initial data or generate new invoice number
   useEffect(() => {
@@ -82,6 +92,8 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       setDeposit(initialInvoice.deposit || 0);
       setNotes(initialInvoice.notes || '');
       setIssueDate(initialInvoice.issueDate || new Date().toISOString().split('T')[0]);
+      setInvoiceTitle(initialInvoice.invoiceTitle || studio.defaultInvoiceTitle || 'វិក្កយបត្រ / INVOICE');
+      setInvoiceTemplate(initialInvoice.invoiceTemplate || studio.selectedTemplateId || 'classic_blue');
     } else {
       // Auto generate invoice number like INV-2026-003
       const randomSuffix = Math.floor(100 + Math.random() * 900);
@@ -89,6 +101,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       const yr = today.getFullYear();
       setInvoiceNumber(`INV-${yr}-${randomSuffix}`);
       setNotes('សូមអរគុណសម្រាប់ការជ្រើសរើសសេវាកម្មថតរូបពីស្ទូឌីយោរបស់យើងខ្ញុំ!');
+      setInvoiceTitle(studio.defaultInvoiceTitle || 'វិក្កយបត្រ / INVOICE');
       
       // Auto-select first package if available
       if (packages.length > 0) {
@@ -228,6 +241,8 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           ]
         : [],
       notes,
+      invoiceTitle: invoiceTitle.trim() || 'វិក្កយបត្រ / INVOICE',
+      invoiceTemplate,
       createdAt: initialInvoice ? initialInvoice.createdAt : new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -424,6 +439,38 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
               onChange={(e) => setIssueDate(e.target.value)}
               className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none"
             />
+          </div>
+
+          {/* Invoice Header Title */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+              ចំណងជើងវិក្កយបត្រ (Invoice Header Title)
+            </label>
+            <input
+              type="text"
+              value={invoiceTitle}
+              onChange={(e) => setInvoiceTitle(e.target.value)}
+              placeholder="ឧ. វិក្កយបត្រ / INVOICE ឬ Pro Forma Invoice"
+              className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          {/* Template Style Override */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+              ម៉ូតវិក្កយបត្រ (Invoice Template)
+            </label>
+            <select
+              value={invoiceTemplate}
+              onChange={(e) => setInvoiceTemplate(e.target.value)}
+              className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 font-semibold focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none"
+            >
+              {INVOICE_TEMPLATES.map((tmpl) => (
+                <option key={tmpl.id} value={tmpl.id}>
+                  {tmpl.nameKhmer} ({tmpl.nameEnglish})
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>

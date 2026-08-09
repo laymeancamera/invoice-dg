@@ -11,10 +11,14 @@ import {
   Download, 
   RefreshCw, 
   Sparkles,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Palette,
+  Globe
 } from 'lucide-react';
 import { exportAllDataJSON, importAllDataJSON } from '../lib/storage';
 import { compressImageToDataUrl } from '../lib/imageUtils';
+import { INVOICE_TEMPLATES } from './InvoiceTemplateSelector';
+import { useLanguage } from '../lib/i18n';
 
 interface StudioSettingsProps {
   studio: StudioProfile;
@@ -27,6 +31,7 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
   currentUser, 
   onSaveStudio 
 }) => {
+  const { lang, setLang } = useLanguage();
   const [profile, setProfile] = useState<StudioProfile>(studio);
   const [termsText, setTermsText] = useState(
     studio.termsAndConditions ? studio.termsAndConditions.join('\n') : ''
@@ -144,13 +149,66 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
         </div>
       )}
 
+      {/* Language Selection Card */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
+        <div className="flex items-center space-x-2">
+          <Globe className="w-5 h-5 text-indigo-600" />
+          <h3 className="font-extrabold text-slate-900 text-sm">
+            {lang === 'km' ? 'ភាសាប្រើប្រាស់ក្នុងប្រព័ន្ធ (System Language)' : 'System Language Setting'}
+          </h3>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            type="button"
+            onClick={() => setLang('km')}
+            className={`p-4 rounded-xl border-2 flex items-center justify-between transition-all cursor-pointer ${
+              lang === 'km'
+                ? 'border-amber-500 bg-amber-50/50 shadow-sm'
+                : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+            }`}
+          >
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">🇰🇭</span>
+              <div className="text-left">
+                <p className="font-extrabold text-slate-900 text-sm">ភាសាខ្មែរ (Khmer)</p>
+                <p className="text-xs text-slate-500">ភាសាផ្លូវការរបស់ប្រព័ន្ធ</p>
+              </div>
+            </div>
+            {lang === 'km' && (
+              <span className="w-3 h-3 bg-amber-500 rounded-full ring-4 ring-amber-200" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setLang('en')}
+            className={`p-4 rounded-xl border-2 flex items-center justify-between transition-all cursor-pointer ${
+              lang === 'en'
+                ? 'border-amber-500 bg-amber-50/50 shadow-sm'
+                : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+            }`}
+          >
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">🇬🇧</span>
+              <div className="text-left">
+                <p className="font-extrabold text-slate-900 text-sm">English</p>
+                <p className="text-xs text-slate-500">English Language Interface</p>
+              </div>
+            </div>
+            {lang === 'en' && (
+              <span className="w-3 h-3 bg-amber-500 rounded-full ring-4 ring-amber-200" />
+            )}
+          </button>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
             <Settings className="w-6 h-6 text-blue-600" />
             <h2 className="text-xl font-black text-slate-900">
-              {isAdmin ? 'ការកំណត់ប្រព័ន្ធ និង Logo (Admin Console)' : 'ការកំណត់ហាងថតរូប និង Logo (Studio Settings)'}
+              {isAdmin ? 'ការកំណត់ប្រព័ន្ធ និង Logo (Admin Console)' : 'ការកំណត់ហាងថតរូប (Studio Settings)'}
             </h2>
             <span className="px-2.5 py-0.5 text-xs font-black bg-blue-100 text-blue-800 rounded-md uppercase">
               {isAdmin ? 'Admin Console' : 'Member Studio'}
@@ -159,7 +217,7 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
           <p className="text-xs text-slate-500 mt-1">
             {isAdmin 
               ? 'កែប្រែ Logo, ឈ្មោះ Studio, Bakong KHQR និងរក្សាទុកទៅ Cloud Firestore ដោយស្វ័យប្រវត្តិ'
-              : 'កែប្រែ Logo ហាងថតរូប, ឈ្មោះហាង, Bakong KHQR, និងព័ត៌មានគណនីសម្រាប់បង្ហាញលើវិក្កយបត្ររបស់អ្នក'}
+              : 'កែប្រែឈ្មោះហាង, Bakong KHQR, និងព័ត៌មានគណនីសម្រាប់បង្ហាញលើវិក្កយបត្ររបស់អ្នក'}
           </p>
         </div>
 
@@ -177,10 +235,21 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
         
         {/* Studio Logo Upload */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2 border-b border-slate-100 pb-3">
-            <Camera className="w-4 h-4 text-amber-500" />
-            <span>រូបភាព Logo របស់ Studio (បង្ហាញលើ Invoices & Profile)</span>
-          </h3>
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+              <Camera className="w-4 h-4 text-amber-500" />
+              <span>
+                {isAdmin 
+                  ? 'រូបភាព Logo ប្រព័ន្ធ (System Logo - Admin)' 
+                  : 'រូបភាព Logo លើវិក្កយបត្រគណនីរបស់អ្នក (User Invoice Logo)'}
+              </span>
+            </h3>
+            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded uppercase ${
+              isAdmin ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-100 text-blue-900 border border-blue-300'
+            }`}>
+              {isAdmin ? 'System Logo' : 'User Invoice Only'}
+            </span>
+          </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {profile.logoUrl ? (
@@ -242,8 +311,14 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
                 </div>
               </div>
 
-              <p className="text-[11px] text-slate-400">
-                រូបភាព Logo នឹងបង្ហាញនៅលើ Header គណនីរបស់អ្នក និងនៅលើវិក្កយបត្រទាំងអស់
+              <p className={`text-[11px] p-2 rounded-lg font-medium border ${
+                isAdmin 
+                  ? 'bg-amber-50/70 text-amber-900 border-amber-200' 
+                  : 'bg-blue-50/70 text-blue-900 border-blue-200'
+              }`}>
+                {isAdmin 
+                  ? 'រូបភាព Logo នេះនឹងបង្ហាញលើ Header ប្រព័ន្ធ និងវិក្កយបត្រទាំងអស់របស់អ្នកប្រើប្រាស់ (System Wide)' 
+                  : 'ℹ️ រូបភាព Logo នេះនឹងបង្ហាញតែនៅលើវិក្កយបត្រក្នុងគណនីរបស់អ្នកប៉ុណ្ណោះ — មិនអនុញ្ញាតឱ្យប្តូរ Logo ប្រព័ន្ធទាំងមូល (System Logo) ឡើយ'}
               </p>
             </div>
           </div>
@@ -410,6 +485,22 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
               className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-medium"
             />
           </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-xs font-bold text-slate-700 uppercase mb-1 text-blue-700">
+              ចំណងជើងវិក្កយបត្រដើម (Default Invoice Header Title)
+            </label>
+            <input
+              type="text"
+              value={profile.defaultInvoiceTitle || ''}
+              onChange={(e) => setProfile({ ...profile, defaultInvoiceTitle: e.target.value })}
+              placeholder="ឧ. វិក្កយបត្រ / INVOICE ឬ Pro Forma Invoice ឬ បង្កាន់ដៃទទួលប្រាក់ / RECEIPT"
+              className="w-full p-2.5 bg-white border border-blue-300 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-blue-500/30"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">
+              ចំណងជើងនេះនឹងបង្ហាញនៅលើ Header ខាងស្តាំលើនៃវិក្កយបត្រ (អ្នកអាចកែប្រែក្នុងទម្រង់ Invoice នីមួយៗបានផងដែរ)
+            </p>
+          </div>
         </div>
       </div>
 
@@ -472,6 +563,58 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
               className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold"
             />
           </div>
+        </div>
+      </div>
+
+      {/* Invoice Template Selection Box */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center space-x-2">
+            <Palette className="w-5 h-5 text-amber-500" />
+            <h3 className="text-base font-bold text-slate-900">
+              ម៉ូតវិក្កយបត្រសំខាន់ (Default Invoice Template)
+            </h3>
+          </div>
+          <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
+            {INVOICE_TEMPLATES.find((t) => t.id === profile.selectedTemplateId)?.nameKhmer || 'Classic Blue Pro'}
+          </span>
+        </div>
+
+        <p className="text-xs text-slate-500">
+          ជ្រើសរើសម៉ូតដើម (Default Style) សម្រាប់បង្កើតវិក្កយបត្រថ្មីៗទាំងអស់ក្នុងគណនីរបស់អ្នក៖
+        </p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
+          {INVOICE_TEMPLATES.map((tmpl) => {
+            const isSelected = (profile.selectedTemplateId || 'classic_blue') === tmpl.id;
+            return (
+              <button
+                key={tmpl.id}
+                type="button"
+                onClick={() => setProfile({ ...profile, selectedTemplateId: tmpl.id })}
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between space-y-2 ${
+                  isSelected
+                    ? 'bg-amber-50 border-amber-500 ring-2 ring-amber-400 font-extrabold shadow-sm'
+                    : 'bg-slate-50 border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  {tmpl.icon}
+                  {isSelected && (
+                    <span className="w-2 h-2 rounded-full bg-amber-500 ring-2 ring-amber-200" />
+                  )}
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-900 line-clamp-1">
+                    {tmpl.nameKhmer.split(' (')[0]}
+                  </div>
+                  <div className="text-[10px] text-slate-500 line-clamp-1">
+                    {tmpl.nameEnglish}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 

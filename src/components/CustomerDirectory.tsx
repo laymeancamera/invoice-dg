@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CustomerProfile, Invoice } from '../types';
 import { Search, User, Phone, Calendar, MapPin, DollarSign, FileText, Heart, Clock } from 'lucide-react';
+import { useLanguage } from '../lib/i18n';
 
 interface CustomerDirectoryProps {
   customers: CustomerProfile[];
@@ -13,6 +14,7 @@ export const CustomerDirectory: React.FC<CustomerDirectoryProps> = ({
   invoices,
   onViewInvoice,
 }) => {
+  const { lang, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
 

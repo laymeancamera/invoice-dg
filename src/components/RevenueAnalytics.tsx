@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Invoice, StudioProfile } from '../types';
 import { TrendingUp, DollarSign, CheckCircle2, Clock, Calendar, BarChart3, PieChart } from 'lucide-react';
+import { useLanguage } from '../lib/i18n';
 
 interface RevenueAnalyticsProps {
   invoices: Invoice[];
@@ -8,6 +9,7 @@ interface RevenueAnalyticsProps {
 }
 
 export const RevenueAnalytics: React.FC<RevenueAnalyticsProps> = ({ invoices, studio }) => {
+  const { lang, t } = useLanguage();
   const metrics = useMemo(() => {
     const totalSales = invoices.reduce((acc, i) => acc + i.total, 0);
     const totalPaid = invoices.reduce((acc, i) => acc + i.paidAmount, 0);

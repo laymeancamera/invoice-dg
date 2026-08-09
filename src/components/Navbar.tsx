@@ -13,12 +13,16 @@ import {
   LogOut,
   User,
   ArrowLeft,
-  Smartphone
+  Smartphone,
+  Palette,
+  Globe,
+  Sparkles
 } from 'lucide-react';
 import { StudioProfile, UserAccount } from '../types';
 import { InstallPwaModal } from './InstallPwaModal';
+import { useLanguage } from '../lib/i18n';
 
-export type TabType = 'welcome' | 'invoices' | 'create_invoice' | 'packages' | 'customers' | 'revenue' | 'settings' | 'admin';
+export type TabType = 'welcome' | 'invoices' | 'create_invoice' | 'packages' | 'customers' | 'revenue' | 'settings' | 'admin' | 'invoice_templates';
 
 interface NavbarProps {
   activeTab: TabType;
@@ -28,6 +32,8 @@ interface NavbarProps {
   onNewInvoiceClick: () => void;
   onOpenAuth: (tab: 'login' | 'register') => void;
   onLogout: () => void;
+  onOpenUpgradeModal?: () => void;
+  todayInvoiceCount?: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -37,9 +43,17 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onNewInvoiceClick,
   onOpenAuth,
-  onLogout
+  onLogout,
+  onOpenUpgradeModal,
+  todayInvoiceCount = 0
 }) => {
   const [isPwaModalOpen, setIsPwaModalOpen] = useState(false);
+  const { lang, setLang, t } = useLanguage();
+
+  const toggleLanguage = () => {
+    setLang(lang === 'km' ? 'en' : 'km');
+  };
+
 
   return (
     <>
@@ -50,31 +64,31 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Logo & Studio Name - Click to return to Welcome Portal */}
             <div 
               onClick={() => setActiveTab('welcome')}
-              className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group min-w-0"
+              className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group min-w-0 shrink"
               title="ត្រឡប់ទៅកាន់ផ្ទាំងទំព័រដើម (Welcome Portal)"
             >
-              {studio.logoUrl ? (
+              <div className="relative shrink-0">
                 <img 
-                  src={studio.logoUrl} 
-                  alt="Studio Logo" 
-                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover ring-2 ring-blue-500/40 group-hover:scale-105 transition-transform shrink-0" 
+                  src={studio.logoUrl || '/digital_pro_logo.svg'} 
+                  alt="Digital Pro Logo" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/digital_pro_logo.svg';
+                  }}
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-contain bg-slate-950 p-0.5 ring-2 ring-emerald-500/60 shadow-md group-hover:scale-105 transition-transform" 
                 />
-              ) : (
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-md ring-2 ring-blue-400/20 group-hover:scale-105 transition-transform shrink-0">
-                  <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-              )}
-              <div className="min-w-0">
-                <div className="flex items-center space-x-1.5">
-                  <h1 className="text-xs sm:text-base font-bold tracking-tight text-white group-hover:text-blue-400 transition-colors truncate max-w-[110px] sm:max-w-xs">
-                    {studio.khmerName || studio.name}
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-emerald-500 border-2 border-slate-900 rounded-full animate-pulse" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center space-x-1 sm:space-x-1.5">
+                  <h1 className="text-xs sm:text-base font-black tracking-tight text-white group-hover:text-blue-400 transition-colors truncate max-w-[125px] sm:max-w-xs">
+                    វិក្កយបត្រ Digital Pro
                   </h1>
-                  <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                    Dashboard App
+                  <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-blue-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
+                    SUPER APP
                   </span>
                 </div>
-                <p className="hidden sm:block text-[11px] text-slate-400 truncate max-w-xs">
-                  {studio.tagline || 'ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រជាងថតរូប'}
+                <p className="text-[10px] sm:text-[11px] text-slate-400 truncate max-w-[125px] sm:max-w-xs">
+                  {studio.khmerName || studio.name || 'ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ'}
                 </p>
               </div>
             </div>
@@ -82,6 +96,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* User Profile & Quick Action Buttons */}
             <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
               
+              {/* Language Switcher Toggle */}
+              <button
+                onClick={toggleLanguage}
+                className="inline-flex items-center space-x-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
+                title={lang === 'km' ? 'Switch to English' : 'ប្តូរទៅភាសាខ្មែរ'}
+              >
+                <Globe className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-extrabold">{lang === 'km' ? '🇰🇭 ខ្មែរ' : '🇬🇧 EN'}</span>
+              </button>
+
               {/* Add to Home Screen / Install App Button */}
               <button
                 onClick={() => setIsPwaModalOpen(true)}
@@ -89,7 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="ដំឡើង App ទៅលើ Home Screen ដូច App Original"
               >
                 <Smartphone className="w-3.5 h-3.5 text-emerald-200 animate-pulse" />
-                <span>ដំឡើង App</span>
+                <span className="hidden sm:inline">{lang === 'km' ? 'ដំឡើង App' : 'Install App'}</span>
               </button>
 
               {/* Return to Public Portal Button (Only if not logged in) */}
@@ -116,28 +140,53 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* User Logged In Profile Badge */}
             {currentUser ? (
-              <div className="flex items-center space-x-1.5 sm:space-x-2 bg-slate-800/90 border border-slate-700/80 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl">
-                <div className="p-1 bg-blue-600/30 text-blue-400 rounded-lg">
-                  <User className="w-3.5 h-3.5" />
-                </div>
-                <div className="hidden sm:block text-left text-xs">
-                  <div className="font-bold text-white flex items-center space-x-1">
-                    <span>{currentUser.name}</span>
-                    {currentUser.role === 'admin' && (
-                      <span className="text-[9px] bg-amber-500 text-slate-950 font-black px-1 rounded">
-                        ADMIN
+              <div className="flex items-center space-x-1.5 sm:space-x-2">
+                
+                {/* Member Limit Badge & Upgrade Button */}
+                {currentUser.role !== 'admin' && (
+                  <div className="flex items-center space-x-1.5">
+                    {currentUser.isUnlimited || currentUser.plan === 'unlimited' ? (
+                      <span className="inline-flex items-center space-x-1 px-2 sm:px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-cyan-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black shadow-[0_0_12px_rgba(245,158,11,0.25)]">
+                        <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400" />
+                        <span className="tracking-tight uppercase">SUPER APP PRO</span>
                       </span>
+                    ) : (
+                      <button
+                        onClick={onOpenUpgradeModal}
+                        className="inline-flex items-center space-x-1 sm:space-x-1.5 bg-gradient-to-r from-amber-500 via-emerald-500 to-cyan-500 hover:brightness-110 text-slate-950 font-black px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs shadow-[0_0_18px_rgba(245,158,11,0.35)] transition-all active:scale-95 cursor-pointer border border-amber-200/60"
+                        title="ដំឡើងគម្រោង SUPER APP PRO ($10) បង្កើតវិក្កយបត្រគ្មានដែនកំណត់"
+                      >
+                        <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-950 fill-amber-300 shrink-0" />
+                        <span className="hidden md:inline font-black">{todayInvoiceCount}/20 ថ្ងៃនេះ •</span>
+                        <span className="tracking-tight uppercase font-black">Upgrade ($10)</span>
+                      </button>
                     )}
                   </div>
-                  <div className="text-[10px] text-slate-400 font-mono">@{currentUser.username}</div>
+                )}
+
+                <div className="flex items-center space-x-1.5 sm:space-x-2 bg-slate-800/90 border border-slate-700/80 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl">
+                  <div className="p-1 bg-blue-600/30 text-blue-400 rounded-lg">
+                    <User className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="hidden sm:block text-left text-xs">
+                    <div className="font-bold text-white flex items-center space-x-1">
+                      <span>{currentUser.name}</span>
+                      {currentUser.role === 'admin' && (
+                        <span className="text-[9px] bg-amber-500 text-slate-950 font-black px-1 rounded">
+                          ADMIN
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono">@{currentUser.username}</div>
+                  </div>
+                  <button
+                    onClick={onLogout}
+                    title="ចាកចេញ (Logout)"
+                    className="p-1 text-slate-400 hover:text-rose-400 hover:bg-slate-700 rounded transition-colors cursor-pointer ml-0.5"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={onLogout}
-                  title="ចាកចេញ (Logout)"
-                  className="p-1 text-slate-400 hover:text-rose-400 hover:bg-slate-700 rounded transition-colors cursor-pointer ml-0.5"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
               </div>
             ) : (
               <div className="flex items-center space-x-1.5">
@@ -211,7 +260,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                <span>បញ្ជីវិក្កយបត្រ</span>
+                <span>{t.invoices}</span>
               </button>
 
               {/* Create Invoice */}
@@ -224,7 +273,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>បង្កើតវិក្កយបត្រ</span>
+                <span>{t.createInvoice}</span>
               </button>
 
               {/* Packages */}
@@ -237,7 +286,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Package className="w-4 h-4" />
-                <span>កញ្ចប់សេវាកម្ម</span>
+                <span>{t.packages}</span>
               </button>
 
               {/* Customers */}
@@ -250,7 +299,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Users className="w-4 h-4" />
-                <span>ប្រវត្តិអតិថិជន</span>
+                <span>{t.customers}</span>
               </button>
 
               {/* Revenue */}
@@ -263,7 +312,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <TrendingUp className="w-4 h-4" />
-                <span>បូកសរុបចំណូល</span>
+                <span>{t.revenue}</span>
               </button>
 
               {/* Settings */}
@@ -276,7 +325,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Settings className="w-4 h-4" />
-                <span>កំណត់ Studio</span>
+                <span>{t.settings}</span>
+              </button>
+
+              {/* Invoice Template Button */}
+              <button
+                onClick={() => setActiveTab('invoice_templates')}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-extrabold text-xs whitespace-nowrap transition-all cursor-pointer border ${
+                  activeTab === 'invoice_templates'
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md ring-2 ring-amber-300'
+                    : 'bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20 hover:text-amber-200'
+                }`}
+              >
+                <Palette className="w-4 h-4 text-amber-400" />
+                <span>{t.invoiceTemplates}</span>
               </button>
             </>
           )}
@@ -323,7 +385,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <FileText className="w-5 h-5 mb-0.5" />
-              <span className="text-[10px]">វិក្កយបត្រ</span>
+              <span className="text-[10px]">{t.invoices}</span>
             </button>
 
             {/* Tab 2: Packages */}
@@ -336,7 +398,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Package className="w-5 h-5 mb-0.5" />
-              <span className="text-[10px]">កញ្ចប់</span>
+              <span className="text-[10px]">{t.packages}</span>
             </button>
 
             {/* Tab 3: CENTER FLOATING ACTION - CREATE INVOICE */}
@@ -347,7 +409,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-lg shadow-blue-600/50 ring-4 ring-slate-900 group-active:scale-95 transition-all">
                 <PlusCircle className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-bold text-blue-400 mt-0.5">បង្កើតថ្មី</span>
+              <span className="text-[10px] font-bold text-blue-400 mt-0.5">{t.createInvoice}</span>
             </button>
 
             {/* Tab 4: Customers */}
@@ -360,7 +422,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Users className="w-5 h-5 mb-0.5" />
-              <span className="text-[10px]">អតិថិជន</span>
+              <span className="text-[10px]">{t.customers}</span>
             </button>
 
             {/* Tab 5: Settings / Admin */}
@@ -384,7 +446,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Settings className="w-5 h-5 mb-0.5" />
               )}
               <span className="text-[10px]">
-                {currentUser?.role === 'admin' ? 'Admin' : 'កំណត់'}
+                {currentUser?.role === 'admin' ? 'Admin' : t.settings}
               </span>
             </button>
           </>

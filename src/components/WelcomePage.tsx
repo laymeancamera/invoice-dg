@@ -34,6 +34,8 @@ import {
   Smartphone
 } from 'lucide-react';
 import { InstallPwaModal } from './InstallPwaModal';
+import { Globe } from 'lucide-react';
+import { useLanguage } from '../lib/i18n';
 
 interface WelcomePageProps {
   studio: StudioProfile;
@@ -52,6 +54,7 @@ export function WelcomePage({
   onNavigateToAdmin,
   onLogout
 }: WelcomePageProps) {
+  const { lang, setLang, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isPwaModalOpen, setIsPwaModalOpen] = useState(false);
   
@@ -90,17 +93,14 @@ export function WelcomePage({
             
             {/* Logo & Brand */}
             <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer min-w-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              {studio.logoUrl ? (
-                <img 
-                  src={studio.logoUrl} 
-                  alt="Studio Logo" 
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover ring-2 ring-blue-500/50 shrink-0" 
-                />
-              ) : (
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black shadow-lg ring-2 ring-blue-400/30 shrink-0">
-                  <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-              )}
+              <img 
+                src={studio.logoUrl || '/digital_pro_logo.svg'} 
+                alt="Digital Pro Logo" 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/digital_pro_logo.svg';
+                }}
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover ring-2 ring-blue-500/50 shrink-0" 
+              />
               <div className="min-w-0">
                 <div className="flex items-center space-x-1.5">
                   <span className="text-sm sm:text-lg font-black tracking-tight text-white truncate max-w-[140px] sm:max-w-none">
@@ -146,13 +146,23 @@ export function WelcomePage({
 
             {/* Desktop Action Buttons */}
             <div className="hidden md:flex items-center space-x-3">
+              {/* Language Switcher */}
+              <button
+                onClick={() => setLang(lang === 'km' ? 'en' : 'km')}
+                className="px-3 py-2 text-xs font-bold text-amber-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl shadow-sm transition-all cursor-pointer flex items-center space-x-1.5 active:scale-95"
+                title={lang === 'km' ? 'Switch to English' : 'ប្តូរទៅភាសាខ្មែរ'}
+              >
+                <Globe className="w-4 h-4 text-amber-400" />
+                <span>{lang === 'km' ? '🇰🇭 ខ្មែរ' : '🇬🇧 EN'}</span>
+              </button>
+
               <button
                 onClick={() => setIsPwaModalOpen(true)}
                 className="px-3.5 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border border-emerald-400/30 rounded-xl shadow-md transition-all cursor-pointer flex items-center space-x-1.5 active:scale-95"
                 title="ដំឡើង App ទៅលើ Home Screen"
               >
                 <Smartphone className="w-4 h-4 text-emerald-200 animate-pulse" />
-                <span>ដំឡើង App</span>
+                <span>{t.installApp}</span>
               </button>
               {currentUser ? (
                 <div className="flex items-center space-x-3 bg-slate-800 border border-slate-700/80 px-3.5 py-1.5 rounded-xl">

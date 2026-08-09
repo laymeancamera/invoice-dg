@@ -2,77 +2,58 @@ import React, { useState, useEffect } from 'react';
 import { 
   UserAccount, 
   UserRole, 
-  UserStatus, 
-  SystemConfig,
-  StudioProfile
+  UserStatus,
+  UpgradeRequest,
+  UpgradeRequestStatus
 } from '../types';
 import { 
   getUsers, 
-  saveUsers, 
   saveSingleUser, 
   deleteUser, 
-  getSystemConfig, 
-  saveSystemConfig, 
   getInvoices,
+  getUpgradeRequests,
+  updateUpgradeRequestStatus,
   STORAGE_EVENT 
 } from '../lib/storage';
-import { compressImageToDataUrl } from '../lib/imageUtils';
 import { 
   ShieldCheck, 
   Users, 
   UserCheck, 
   UserX, 
-  Plus, 
   Search, 
   Edit3, 
   Trash2, 
   KeyRound, 
   CheckCircle2, 
   AlertCircle, 
-  Settings, 
   FileText, 
-  Building, 
-  Phone, 
-  Lock, 
-  User, 
   X, 
   Save, 
-  ToggleLeft, 
-  ToggleRight,
   Shield,
-  Activity,
   UserPlus,
-  Camera,
-  Upload,
-  Link as LinkIcon,
-  Sparkles
+  Sparkles,
+  Clock,
+  Eye,
+  Check,
+  XCircle,
+  CreditCard
 } from 'lucide-react';
+import { useLanguage } from '../lib/i18n';
 
 interface AdminDashboardProps {
   currentUser: UserAccount | null;
-  studio?: StudioProfile;
-  onSaveStudio?: (profile: StudioProfile) => void;
 }
 
-export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashboardProps) {
+export function AdminDashboard({ currentUser }: AdminDashboardProps) {
+  const { lang, t } = useLanguage();
   const [users, setUsers] = useState<UserAccount[]>(getUsers());
-  const [sysConfig, setSysConfig] = useState<SystemConfig>(getSystemConfig());
+  const [upgradeRequests, setUpgradeRequests] = useState<UpgradeRequest[]>(getUpgradeRequests());
   const invoices = getInvoices();
 
-  // Local System & Studio Config state
-  const [systemTitle, setSystemTitle] = useState(sysConfig.systemTitle || 'វិក្កយបត្រ Digital Pro');
-  const [studioKhmerName, setStudioKhmerName] = useState(studio?.khmerName || 'ជាងថតរូប ឡាយ មីន');
-  const [studioEngName, setStudioEngName] = useState(studio?.name || 'Digital Pro Studio');
-  const [systemLogo, setSystemLogo] = useState(studio?.logoUrl || '');
-  const [logoUrlInput, setLogoUrlInput] = useState('');
-
-  useEffect(() => {
-    if (studio) {
-      setStudioKhmerName(studio.khmerName || '');
-      setStudioEngName(studio.name || '');
-      setSystemLogo(studio.logoUrl || '');
-    }
-  }, [studio]);
+  // Navigation tab inside Admin Console
+  const [adminTab, setAdminTab] = useState<'users' | 'upgrade_requests'>('users');
+  const [selectedSlipUrl, setSelectedSlipUrl] = useState<string | null>(null);
+  const [reqStatusFilter, setReqStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -91,20 +72,35 @@ export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashb
   const [formPassword, setFormPassword] = useState('');
   const [formRole, setFormRole] = useState<UserRole>('member');
   const [formStatus, setFormStatus] = useState<UserStatus>('active');
+  const [formIsUnlimited, setFormIsUnlimited] = useState<boolean>(false);
 
   const [notificationMsg, setNotificationMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Refresh users list from storage
-  const refreshUsersList = () => {
+  // Refresh users list and upgrade requests from storage
+  const refreshAll = () => {
     setUsers(getUsers());
-    setSysConfig(getSystemConfig());
+    setUpgradeRequests(getUpgradeRequests());
   };
 
   useEffect(() => {
-    refreshUsersList();
-    window.addEventListener(STORAGE_EVENT, refreshUsersList);
-    return () => window.removeEventListener(STORAGE_EVENT, refreshUsersList);
+    refreshAll();
+    window.addEventListener(STORAGE_EVENT, refreshAll);
+    return () => window.removeEventListener(STORAGE_EVENT, refreshAll);
   }, []);
+
+  const pendingReqCount = upgradeRequests.filter((r) => r.status === 'pending').length;
+
+  const handleApproveRequest = (req: UpgradeRequest) => {
+    updateUpgradeRequestStatus(req.id, 'approved');
+    refreshAll();
+    showNotification('success', `បានអនុម័តគម្រោង Lifetime No Limit ជូនគណនី ${req.userName} ជោគជ័យ!`);
+  };
+
+  const handleRejectRequest = (req: UpgradeRequest) => {
+    updateUpgradeRequestStatus(req.id, 'rejected');
+    refreshAll();
+    showNotification('success', `បានបដិសេធសំណើរបស់ ${req.userName}`);
+  };
 
   const showNotification = (type: 'success' | 'error', text: string) => {
     setNotificationMsg({ type, text });
@@ -122,7 +118,7 @@ export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashb
     const nextStatus: UserStatus = user.status === 'active' ? 'inactive' : 'active';
     const updated = { ...user, status: nextStatus };
     saveSingleUser(updated);
-    refreshUsersList();
+    refreshAll();
     showNotification('success', `បានផ្លាស់ប្តូរស្ថានភាពគណនី ${user.name} ទៅជា ${nextStatus === 'active' ? 'កំពុងប្រើប្រាស់ (Active)' : 'ផ្អាកប្រើប្រាស់ (Inactive)'}`);
   };
 
@@ -136,6 +132,7 @@ export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashb
     setFormPassword('');
     setFormRole('member');
     setFormStatus('active');
+    setFormIsUnlimited(false);
     setIsUserModalOpen(true);
   };
 
@@ -149,6 +146,7 @@ export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashb
     setFormPassword(user.password);
     setFormRole(user.role);
     setFormStatus(user.status);
+    setFormIsUnlimited(Boolean(user.isUnlimited || user.plan === 'unlimited'));
     setIsUserModalOpen(true);
   };
 
@@ -179,12 +177,14 @@ export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashb
       studioName: formStudio.trim() || 'Photo Studio',
       role: formRole,
       status: formStatus,
+      plan: formIsUnlimited ? 'unlimited' : 'free',
+      isUnlimited: formIsUnlimited,
       createdAt: editingUser ? editingUser.createdAt : new Date().toISOString(),
       lastLoginAt: editingUser?.lastLoginAt
     };
 
     saveSingleUser(newUser);
-    refreshUsersList();
+    refreshAll();
     setIsUserModalOpen(false);
     showNotification('success', editingUser ? 'បានកែប្រែគណនីជោគជ័យ!' : 'បានបង្កើតគណនីថ្មីជោគជ័យ!');
   };
@@ -209,7 +209,7 @@ export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashb
     }
 
     deleteUser(userToDelete.id);
-    refreshUsersList();
+    refreshAll();
     showNotification('success', `បានលុបគណនី "${userToDelete.name}" (${userToDelete.username}) ចេញពី Cloud Firestore រួចរាល់!`);
     setUserToDelete(null);
     if (isUserModalOpen && editingUser?.id === userToDelete.id) {
@@ -224,74 +224,9 @@ export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashb
     if (newPass) {
       const updated = { ...user, password: newPass };
       saveSingleUser(updated);
-      refreshUsersList();
+      refreshAll();
       showNotification('success', `បានកំណត់ពាក្យសម្ងាត់ថ្មីជា "${newPass}" ជោគជ័យ!`);
     }
-  };
-
-  // Admin Upload System Logo (compressed data URL)
-  const handleLogoUploadAdmin = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const compressed = await compressImageToDataUrl(file, 500, 500, 0.85);
-      setSystemLogo(compressed);
-      showNotification('success', 'បានបញ្ចូល និងបង្រួមរូបភាព Logo លើ Cloud!');
-    } catch (err) {
-      console.error('Failed to compress logo image:', err);
-      showNotification('error', 'មានបញ្ហាក្នុងការ Upload រូបភាព Logo!');
-    }
-  };
-
-  // Admin Add Logo via Link URL
-  const handleAddLogoUrlAdmin = () => {
-    if (!logoUrlInput.trim()) return;
-    setSystemLogo(logoUrlInput.trim());
-    setLogoUrlInput('');
-    showNotification('success', 'បានប្តូរ Logo តាម Link URL!');
-  };
-
-  // Save System & Studio Settings to Cloud Firestore
-  const handleSaveSystemAndStudio = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // 1. Update System Config
-    const updatedSysConfig: SystemConfig = {
-      ...sysConfig,
-      systemTitle: systemTitle.trim() || 'វិក្កយបត្រ Digital Pro'
-    };
-    setSysConfig(updatedSysConfig);
-    saveSystemConfig(updatedSysConfig);
-
-    // 2. Update Studio Profile
-    if (studio && onSaveStudio) {
-      const updatedStudio: StudioProfile = {
-        ...studio,
-        khmerName: studioKhmerName.trim() || studio.khmerName,
-        name: studioEngName.trim() || studio.name,
-        logoUrl: systemLogo
-      };
-      onSaveStudio(updatedStudio);
-    }
-
-    showNotification('success', 'បានរក្សាទុកឈ្មោះប្រព័ន្ធ និង Logo ទៅកាន់ Cloud Firestore រួចរាល់!');
-  };
-
-  // Toggle Public Registration Setting
-  const handleToggleRegistration = () => {
-    const updated = { ...sysConfig, allowPublicRegistration: !sysConfig.allowPublicRegistration };
-    setSysConfig(updated);
-    saveSystemConfig(updated);
-    showNotification('success', `បាន ${updated.allowPublicRegistration ? 'បើក' : 'បិទ'} ការចុះឈ្មោះជាសាធារណៈ`);
-  };
-
-  // Toggle Maintenance Mode Setting
-  const handleToggleMaintenance = () => {
-    const updated = { ...sysConfig, maintenanceMode: !sysConfig.maintenanceMode };
-    setSysConfig(updated);
-    saveSystemConfig(updated);
-    showNotification('success', `បាន ${updated.maintenanceMode ? 'បើក' : 'បិទ'} របៀបថែទាំប្រព័ន្ធ (Maintenance)`);
   };
 
   // Filtered Users List
@@ -419,394 +354,407 @@ export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashb
 
       </div>
 
-      {/* USER MANAGEMENT TABLE SECTION */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-        
-        {/* Table Filter Controls */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-          <div className="flex items-center space-x-2">
-            <Users className="w-5 h-5 text-blue-600" />
-            <h2 className="text-base font-bold text-slate-900">
-              បញ្ជីសមាជិក និងអ្នកប្រើប្រាស់ (User Accounts List)
-            </h2>
-          </div>
+      {/* TAB SWITCHER HEADER (Users Management vs Upgrade Requests $10) */}
+      <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
+        <button
+          onClick={() => setAdminTab('users')}
+          className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl font-black text-xs transition-all cursor-pointer ${
+            adminTab === 'users'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>គ្រប់គ្រងសមាជិក ({users.length})</span>
+        </button>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Search input */}
-            <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ស្វែងរកតាម ឈ្មោះ, Username, Studio..."
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:ring-2 focus:ring-blue-500/30 outline-none"
-              />
-            </div>
-
-            {/* Filter Tabs */}
-            <div className="flex bg-slate-100 p-1 rounded-lg text-xs font-bold text-slate-600">
-              <button
-                onClick={() => setStatusFilter('all')}
-                className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
-                  statusFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'hover:bg-slate-200'
-                }`}
-              >
-                ទាំងអស់ ({users.length})
-              </button>
-              <button
-                onClick={() => setStatusFilter('active')}
-                className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
-                  statusFilter === 'active' ? 'bg-emerald-600 text-white shadow-sm' : 'hover:bg-slate-200'
-                }`}
-              >
-                កំពុងប្រើ ({activeCount})
-              </button>
-              <button
-                onClick={() => setStatusFilter('inactive')}
-                className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
-                  statusFilter === 'inactive' ? 'bg-amber-600 text-white shadow-sm' : 'hover:bg-slate-200'
-                }`}
-              >
-                ផ្អាក ({inactiveCount})
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* User Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
-                <th className="p-3">ឈ្មោះ និង Username</th>
-                <th className="p-3">ឈ្មោះ Studio</th>
-                <th className="p-3">លេខទូរស័ព្ទ / អ៊ីមែល</th>
-                <th className="p-3 text-center">សិទ្ធិ (Role)</th>
-                <th className="p-3 text-center">ស្ថានភាព (Status)</th>
-                <th className="p-3 text-right">សកម្មភាព (Actions)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-400">
-                    មិនមានទិន្នន័យសមាជិកដែលត្រូវគ្នាឡើយ។
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map((usr) => (
-                  <tr key={usr.id} className="hover:bg-slate-50/80 transition-colors">
-                    
-                    {/* Name & Username */}
-                    <td className="p-3">
-                      <div className="font-bold text-slate-900 flex items-center space-x-1.5">
-                        <span>{usr.name}</span>
-                        {usr.role === 'admin' && (
-                          <span className="text-[10px] bg-amber-500 text-slate-950 font-black px-1.5 py-0.2 rounded">
-                            ADMIN
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-slate-400 font-mono">@{usr.username}</span>
-                    </td>
-
-                    {/* Studio Name */}
-                    <td className="p-3 text-slate-700 font-medium">
-                      {usr.studioName || '-'}
-                    </td>
-
-                    {/* Phone/Email */}
-                    <td className="p-3 text-slate-700 font-medium">
-                      {usr.emailPhone}
-                    </td>
-
-                    {/* Role */}
-                    <td className="p-3 text-center">
-                      <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] uppercase ${
-                        usr.role === 'admin'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-slate-100 text-slate-700'
-                      }`}>
-                        {usr.role}
-                      </span>
-                    </td>
-
-                    {/* Status Toggle Badge */}
-                    <td className="p-3 text-center">
-                      <button
-                        onClick={() => handleToggleStatus(usr)}
-                        title="ចុចដើម្បីប្តូរស្ថានភាព Active / Inactive"
-                        className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full font-bold text-[10px] cursor-pointer transition-all ${
-                          usr.status === 'active'
-                            ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                            : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                        }`}
-                      >
-                        {usr.status === 'active' ? (
-                          <>
-                            <UserCheck className="w-3 h-3 text-emerald-600" />
-                            <span>កំពុងប្រើ (Active)</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserX className="w-3 h-3 text-amber-600" />
-                            <span>ផ្អាកប្រើ (Inactive)</span>
-                          </>
-                        )}
-                      </button>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="p-3 text-right">
-                      <div className="flex items-center justify-end space-x-1.5">
-                        
-                        {/* Reset Password */}
-                        <button
-                          onClick={() => handleResetPassword(usr)}
-                          title="កំណត់ពាក្យសម្ងាត់ថ្មី"
-                          className="p-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <KeyRound className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Edit User */}
-                        <button
-                          onClick={() => handleOpenEdit(usr)}
-                          title="កែប្រែព័ត៌មាន"
-                          className="p-1.5 bg-slate-100 hover:bg-amber-50 text-slate-600 hover:text-amber-600 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Delete User */}
-                        <button
-                          onClick={() => handleDeleteUser(usr)}
-                          title="លុបគណនី"
-                          className="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-
-                      </div>
-                    </td>
-
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
+        <button
+          onClick={() => setAdminTab('upgrade_requests')}
+          className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl font-black text-xs transition-all cursor-pointer relative ${
+            adminTab === 'upgrade_requests'
+              ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-300'
+              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-amber-950" />
+          <span>សំណើ Upgrade ($10)</span>
+          {pendingReqCount > 0 && (
+            <span className="bg-rose-600 text-white font-black text-[10px] px-2 py-0.5 rounded-full animate-pulse shadow-sm">
+              {pendingReqCount} ថ្មី
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* SYSTEM CONFIGURATION PANEL */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center space-x-2">
-            <Settings className="w-5 h-5 text-blue-600" />
-            <h2 className="text-base font-bold text-slate-900">
-              ការកំណត់ប្រព័ន្ធទូទៅ និង Logo (System Configurations & Branding)
-            </h2>
-          </div>
-          <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-            Cloud Sync Enabled
-          </span>
-        </div>
-
-        {/* System Title & Logo Form */}
-        <form onSubmit={handleSaveSystemAndStudio} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-5">
-          <div className="flex items-center space-x-2 text-xs font-bold text-slate-800 border-b border-slate-200 pb-2">
-            <Camera className="w-4 h-4 text-blue-600" />
-            <span>កែប្រែ Logo និងឈ្មោះប្រព័ន្ធបង្ហាញលើ Cloud (System Branding)</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            
-            {/* System / Studio Logo Box */}
-            <div className="flex flex-col items-center justify-center p-4 bg-white rounded-xl border border-slate-200 shadow-sm text-center space-y-3">
-              <div className="relative group">
-                {systemLogo ? (
-                  <img
-                    src={systemLogo}
-                    alt="System Logo"
-                    className="w-24 h-24 rounded-2xl object-cover ring-4 ring-blue-500/20 shadow-md"
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-2xl shadow-md">
-                    <Camera className="w-10 h-10" />
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-1.5 w-full">
-                <label className="inline-flex items-center justify-center space-x-1.5 w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-colors">
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>ជ្រើសរើស Logo ថ្មី</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUploadAdmin}
-                    className="hidden"
-                  />
-                </label>
-
-                {systemLogo && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSystemLogo('');
-                      showNotification('success', 'បានលុប Logo ចេញពីប្រព័ន្ធ!');
-                    }}
-                    className="text-[11px] font-bold text-rose-600 hover:underline cursor-pointer"
-                  >
-                    លុប Logo នេះចេញ
-                  </button>
-                )}
-              </div>
+      {/* USER MANAGEMENT TAB */}
+      {adminTab === 'users' && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          
+          {/* Table Filter Controls */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div className="flex items-center space-x-2">
+              <Users className="w-5 h-5 text-blue-600" />
+              <h2 className="text-base font-bold text-slate-900">
+                បញ្ជីសមាជិក និងអ្នកប្រើប្រាស់ (User Accounts List)
+              </h2>
             </div>
 
-            {/* Inputs: System Names */}
-            <div className="md:col-span-2 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    ឈ្មោះប្រព័ន្ធ / ហាង (ភាសាខ្មែរ)
-                  </label>
-                  <input
-                    type="text"
-                    value={studioKhmerName}
-                    onChange={(e) => setStudioKhmerName(e.target.value)}
-                    placeholder="ឧ. ជាងថតរូប ឡាយ មីន"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/30"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    ឈ្មោះប្រព័ន្ធ / ហាង (ភាសាអង់គ្លេស)
-                  </label>
-                  <input
-                    type="text"
-                    value={studioEngName}
-                    onChange={(e) => setStudioEngName(e.target.value)}
-                    placeholder="ឧ. Lay Mean Photography"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/30"
-                  />
-                </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Search input */}
+              <div className="relative w-full sm:w-64">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="ស្វែងរកតាម ឈ្មោះ, Username, Studio..."
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:ring-2 focus:ring-blue-500/30 outline-none"
+                />
               </div>
 
-              {/* Logo Link URL input option */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  ឬបញ្ចូល Logo តាមរយះ Image URL (Link)
-                </label>
-                <div className="flex space-x-2">
-                  <div className="relative flex-1">
-                    <LinkIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-                    <input
-                      type="url"
-                      value={logoUrlInput}
-                      onChange={(e) => setLogoUrlInput(e.target.value)}
-                      placeholder="https://example.com/logo.png"
-                      className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/30"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAddLogoUrlAdmin}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
-                  >
-                    ប្រើ Link នេះ
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end pt-2">
+              {/* Filter Tabs */}
+              <div className="flex bg-slate-100 p-1 rounded-lg text-xs font-bold text-slate-600">
                 <button
-                  type="submit"
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center space-x-2"
+                  onClick={() => setStatusFilter('all')}
+                  className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                    statusFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'hover:bg-slate-200'
+                  }`}
                 >
-                  <Save className="w-4 h-4" />
-                  <span>រក្សាទុក Logo និងឈ្មោះប្រព័ន្ធទៅ Cloud</span>
+                  ទាំងអស់ ({users.length})
+                </button>
+                <button
+                  onClick={() => setStatusFilter('active')}
+                  className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                    statusFilter === 'active' ? 'bg-emerald-600 text-white shadow-sm' : 'hover:bg-slate-200'
+                  }`}
+                >
+                  កំពុងប្រើ ({activeCount})
+                </button>
+                <button
+                  onClick={() => setStatusFilter('inactive')}
+                  className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                    statusFilter === 'inactive' ? 'bg-amber-600 text-white shadow-sm' : 'hover:bg-slate-200'
+                  }`}
+                >
+                  ផ្អាក ({inactiveCount})
                 </button>
               </div>
-
             </div>
-
-          </div>
-        </form>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Config 1: Allow Public Registration */}
-          <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-            <div className="space-y-1 max-w-xs">
-              <h3 className="text-xs font-bold text-slate-900">
-                ការចុះឈ្មោះជាសាធារណៈ (Public Registration)
-              </h3>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                អនុញ្ញាតឱ្យសមាជិកថ្មីចុះឈ្មោះដោយខ្លួនឯងតាមរយៈផ្ទាំង Sign Up
-              </p>
-            </div>
-
-            <button
-              onClick={handleToggleRegistration}
-              className={`p-2 rounded-xl flex items-center space-x-2 font-bold text-xs cursor-pointer transition-colors ${
-                sysConfig.allowPublicRegistration
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-300 text-slate-700'
-              }`}
-            >
-              {sysConfig.allowPublicRegistration ? (
-                <>
-                  <ToggleRight className="w-5 h-5" />
-                  <span>បើក (Enabled)</span>
-                </>
-              ) : (
-                <>
-                  <ToggleLeft className="w-5 h-5" />
-                  <span>បិទ (Disabled)</span>
-                </>
-              )}
-            </button>
           </div>
 
-          {/* Config 2: Maintenance Mode */}
-          <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-            <div className="space-y-1 max-w-xs">
-              <h3 className="text-xs font-bold text-slate-900">
-                របៀបថែទាំប្រព័ន្ធ (Maintenance Mode)
-              </h3>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                បង្ហាញសារជូនដំណឹងការថែទាំប្រព័ន្ធជាបណ្តោះអាសន្ន
-              </p>
-            </div>
+          {/* User Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
+                  <th className="p-3">ឈ្មោះ និង Username</th>
+                  <th className="p-3">ឈ្មោះ Studio</th>
+                  <th className="p-3">លេខទូរស័ព្ទ / អ៊ីមែល</th>
+                  <th className="p-3 text-center">គម្រោង (Plan)</th>
+                  <th className="p-3 text-center">ស្ថានភាព (Status)</th>
+                  <th className="p-3 text-right">សកម្មភាព (Actions)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-slate-400">
+                      មិនមានទិន្នន័យសមាជិកដែលត្រូវគ្នាឡើយ។
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((usr) => {
+                    const isUserUnlimited = usr.role === 'admin' || usr.isUnlimited || usr.plan === 'unlimited';
+                    return (
+                      <tr key={usr.id} className="hover:bg-slate-50/80 transition-colors">
+                        
+                        {/* Name & Username */}
+                        <td className="p-3">
+                          <div className="font-bold text-slate-900 flex items-center space-x-1.5">
+                            <span>{usr.name}</span>
+                            {usr.role === 'admin' && (
+                              <span className="text-[10px] bg-amber-500 text-slate-950 font-black px-1.5 py-0.2 rounded">
+                                ADMIN
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-slate-400 font-mono">@{usr.username}</span>
+                        </td>
 
-            <button
-              onClick={handleToggleMaintenance}
-              className={`p-2 rounded-xl flex items-center space-x-2 font-bold text-xs cursor-pointer transition-colors ${
-                sysConfig.maintenanceMode
-                  ? 'bg-rose-600 text-white'
-                  : 'bg-slate-300 text-slate-700'
-              }`}
-            >
-              {sysConfig.maintenanceMode ? (
-                <>
-                  <ToggleRight className="w-5 h-5" />
-                  <span>កំពុងថែទាំ</span>
-                </>
-              ) : (
-                <>
-                  <ToggleLeft className="w-5 h-5" />
-                  <span>ធម្មតា</span>
-                </>
-              )}
-            </button>
+                        {/* Studio Name */}
+                        <td className="p-3 text-slate-700 font-medium">
+                          {usr.studioName || '-'}
+                        </td>
+
+                        {/* Phone/Email */}
+                        <td className="p-3 text-slate-700 font-medium">
+                          {usr.emailPhone}
+                        </td>
+
+                        {/* Plan */}
+                        <td className="p-3 text-center">
+                          {isUserUnlimited ? (
+                            <span className="px-2.5 py-1 rounded-full font-black text-[10px] bg-amber-100 text-amber-900 border border-amber-300 inline-flex items-center space-x-1">
+                              <Sparkles className="w-3 h-3 text-amber-600" />
+                              <span>⭐ Lifetime Unlimited</span>
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-1 rounded-full font-bold text-[10px] bg-slate-100 text-slate-600 border border-slate-200">
+                              Free (20 Invoices/ថ្ងៃ)
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Status Toggle Badge */}
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleToggleStatus(usr)}
+                            title="ចុចដើម្បីប្តូរស្ថានភាព Active / Inactive"
+                            className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full font-bold text-[10px] cursor-pointer transition-all ${
+                              usr.status === 'active'
+                                ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                            }`}
+                          >
+                            {usr.status === 'active' ? (
+                              <>
+                                <UserCheck className="w-3 h-3 text-emerald-600" />
+                                <span>កំពុងប្រើ (Active)</span>
+                              </>
+                            ) : (
+                              <>
+                                <UserX className="w-3 h-3 text-amber-600" />
+                                <span>ផ្អាកប្រើ (Inactive)</span>
+                              </>
+                            )}
+                          </button>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="p-3 text-right">
+                          <div className="flex items-center justify-end space-x-1.5">
+                            
+                            {/* Reset Password */}
+                            <button
+                              onClick={() => handleResetPassword(usr)}
+                              title="កំណត់ពាក្យសម្ងាត់ថ្មី"
+                              className="p-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <KeyRound className="w-3.5 h-3.5" />
+                            </button>
+
+                            {/* Edit User */}
+                            <button
+                              onClick={() => handleOpenEdit(usr)}
+                              title="កែប្រែព័ត៌មាន"
+                              className="p-1.5 bg-slate-100 hover:bg-amber-50 text-slate-600 hover:text-amber-600 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
+
+                            {/* Delete User */}
+                            <button
+                              onClick={() => handleDeleteUser(usr)}
+                              title="លុបគណនី"
+                              className="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+
+                          </div>
+                        </td>
+
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
 
         </div>
-      </div>
+      )}
+
+      {/* UPGRADE REQUESTS TAB ($10) */}
+      {adminTab === 'upgrade_requests' && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+                <Sparkles className="w-5 h-5 text-amber-500" />
+                <span>គ្រប់គ្រងសំណើ Upgrade គម្រោង Lifetime No Limit ($10)</span>
+              </h2>
+              <p className="text-xs text-slate-500">
+                ពិនិត្យរូបភាព Payment Slip របស់ User និងចុចអនុម័ត (Approve) ដើម្បីផ្តល់សិទ្ធិប្រើប្រាស់គ្មានដែនកំណត់
+              </p>
+            </div>
+
+            {/* Filter by Request Status */}
+            <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-600">
+              <button
+                onClick={() => setReqStatusFilter('all')}
+                className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                  reqStatusFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'hover:bg-slate-200'
+                }`}
+              >
+                ទាំងអស់ ({upgradeRequests.length})
+              </button>
+              <button
+                onClick={() => setReqStatusFilter('pending')}
+                className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                  reqStatusFilter === 'pending' ? 'bg-amber-500 text-slate-950 font-black shadow-sm' : 'hover:bg-slate-200'
+                }`}
+              >
+                រង់ចាំពិនិត្យ ({pendingReqCount})
+              </button>
+              <button
+                onClick={() => setReqStatusFilter('approved')}
+                className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                  reqStatusFilter === 'approved' ? 'bg-emerald-600 text-white font-bold shadow-sm' : 'hover:bg-slate-200'
+                }`}
+              >
+                បានអនុម័ត ({upgradeRequests.filter(r => r.status === 'approved').length})
+              </button>
+            </div>
+          </div>
+
+          {/* Upgrade Requests Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
+                  <th className="p-3">អ្នកស្នើសុំ (User / Studio)</th>
+                  <th className="p-3">កាលបរិច្ឆេទ</th>
+                  <th className="p-3 text-center">តម្លៃ (Price)</th>
+                  <th className="p-3 text-center">រូបភាពវិក្កយបត្រ (Payment Slip)</th>
+                  <th className="p-3 text-center">ស្ថានភាព (Status)</th>
+                  <th className="p-3 text-right">សកម្មភាព (Actions)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {upgradeRequests.filter(r => reqStatusFilter === 'all' || r.status === reqStatusFilter).length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-12 text-center text-slate-400 font-medium">
+                      មិនទាន់មានសំណើ Upgrade ក្នុងប្រព័ន្ធនៅឡើយទេ។
+                    </td>
+                  </tr>
+                ) : (
+                  upgradeRequests
+                    .filter(r => reqStatusFilter === 'all' || r.status === reqStatusFilter)
+                    .map((req) => (
+                      <tr key={req.id} className="hover:bg-slate-50/80 transition-colors">
+                        
+                        {/* User / Studio */}
+                        <td className="p-3">
+                          <div className="font-bold text-slate-900">{req.userName}</div>
+                          <div className="text-[11px] text-slate-500">{req.studioName || 'Studio'}</div>
+                          <div className="text-[10px] text-slate-400 font-mono">{req.userEmailPhone}</div>
+                        </td>
+
+                        {/* Requested Date */}
+                        <td className="p-3 text-slate-600 font-medium">
+                          {new Date(req.requestedAt).toLocaleString('km-KH', { dateStyle: 'medium', timeStyle: 'short' })}
+                        </td>
+
+                        {/* Price */}
+                        <td className="p-3 text-center">
+                          <span className="font-black text-slate-900 bg-amber-100 text-amber-900 px-2.5 py-1 rounded-lg border border-amber-300">
+                            ${req.amount.toFixed(2)}
+                          </span>
+                        </td>
+
+                        {/* Slip Image Thumbnail */}
+                        <td className="p-3 text-center">
+                          {req.paymentSlipUrl ? (
+                            <button
+                              onClick={() => setSelectedSlipUrl(req.paymentSlipUrl)}
+                              className="inline-flex items-center space-x-1 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 p-1.5 rounded-xl border border-slate-200 transition-all cursor-pointer group"
+                              title="ចុចដើម្បីមើលរូបភាពធំ"
+                            >
+                              <img src={req.paymentSlipUrl} alt="Slip" className="w-10 h-10 object-cover rounded-lg border border-slate-200" />
+                              <Eye className="w-4 h-4 text-slate-400 group-hover:text-amber-600" />
+                            </button>
+                          ) : (
+                            <span className="text-slate-400 italic">គ្មានរូបភាព</span>
+                          )}
+                        </td>
+
+                        {/* Status */}
+                        <td className="p-3 text-center">
+                          {req.status === 'pending' && (
+                            <span className="px-2.5 py-1 bg-amber-100 text-amber-900 border border-amber-300 font-extrabold text-[10px] rounded-full inline-flex items-center space-x-1">
+                              <Clock className="w-3 h-3 text-amber-600 animate-spin" />
+                              <span>រង់ចាំការពិនិត្យ</span>
+                            </span>
+                          )}
+                          {req.status === 'approved' && (
+                            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 font-black text-[10px] rounded-full inline-flex items-center space-x-1">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              <span>បានអនុម័ត (Unlimited)</span>
+                            </span>
+                          )}
+                          {req.status === 'rejected' && (
+                            <span className="px-2.5 py-1 bg-rose-100 text-rose-900 border border-rose-300 font-bold text-[10px] rounded-full inline-flex items-center space-x-1">
+                              <XCircle className="w-3 h-3 text-rose-600" />
+                              <span>បានបដិសេធ</span>
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="p-3 text-right">
+                          {req.status === 'pending' ? (
+                            <div className="flex items-center justify-end space-x-2">
+                              <button
+                                onClick={() => handleApproveRequest(req)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3 py-1.5 rounded-xl text-xs shadow transition-all cursor-pointer flex items-center space-x-1"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                <span>អនុម័ត ($10)</span>
+                              </button>
+                              <button
+                                onClick={() => handleRejectRequest(req)}
+                                className="bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer flex items-center space-x-1"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                                <span>បដិសេធ</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-slate-400 font-medium italic">
+                              {req.status === 'approved' ? 'បានបញ្ជាក់រួចរាល់' : 'បានបដិសេធ'}
+                            </span>
+                          )}
+                        </td>
+
+                      </tr>
+                    ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      )}
+
+      {/* VIEW PAYMENT SLIP MODAL */}
+      {selectedSlipUrl && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white p-4 rounded-3xl max-w-xl w-full shadow-2xl relative border border-slate-200">
+            <button
+              onClick={() => setSelectedSlipUrl(null)}
+              className="absolute top-4 right-4 p-2 bg-slate-900 text-white hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="font-extrabold text-slate-900 text-sm mb-3">រូបភាពវិក្កយបត្រ Payment Slip (ទំហំពេញ)</h3>
+            <div className="bg-slate-100 p-2 rounded-2xl flex justify-center max-h-[75vh] overflow-auto">
+              <img src={selectedSlipUrl} alt="Full Slip" className="max-h-[70vh] object-contain rounded-xl shadow-md" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CREATE / EDIT USER MODAL */}
       {isUserModalOpen && (
@@ -926,6 +874,25 @@ export function AdminDashboard({ currentUser, studio, onSaveStudio }: AdminDashb
                     <option value="active">Active (កំពុងប្រើ)</option>
                     <option value="inactive">Inactive (ផ្អាកប្រើ)</option>
                   </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  គម្រោងប្រើប្រាស់ (Plan)
+                </label>
+                <div className="flex items-center space-x-3 bg-amber-50/80 p-3 rounded-xl border border-amber-200">
+                  <input
+                    type="checkbox"
+                    id="isUnlimitedCheck"
+                    checked={formIsUnlimited}
+                    onChange={(e) => setFormIsUnlimited(e.target.checked)}
+                    className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500 cursor-pointer"
+                  />
+                  <label htmlFor="isUnlimitedCheck" className="text-xs font-extrabold text-slate-900 cursor-pointer flex items-center space-x-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    <span>គម្រោង Lifetime No Limit ($10) • បង្កើតវិក្កយបត្រឥតដែនកំណត់</span>
+                  </label>
                 </div>
               </div>
 

@@ -1,16 +1,16 @@
 import { PackageItem, StudioProfile, Invoice } from '../types';
 
 export const DEFAULT_STUDIO_PROFILE: StudioProfile = {
-  name: 'Lay Mean Photography',
-  khmerName: 'ជាងថតរូប ឡាយ មីន',
-  tagline: 'សេវាកម្មថតរូប Pre-Wedding និង ថតរូបថ្ងៃមង្គលការ កម្រិតជំនាញ',
+  name: 'វិក្កយបត្រ Digital Pro',
+  khmerName: 'វិក្កយបត្រ Digital Pro',
+  tagline: 'ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ Digital Pro សម្រាប់ជាងថតរូប',
   phone: '012 345 678',
   secondaryPhone: '098 765 432',
-  telegramUsername: 'laymeancamera',
+  telegramUsername: 'digitalprostudio',
   address: 'រាជធានីភ្នំពេញ, ប្រទេសកម្ពុជា',
-  email: 'laymeancamera@gmail.com',
-  facebookPage: 'Lay Mean Photography',
-  logoUrl: '', // Default placeholder if empty
+  email: 'digitalpro@gmail.com',
+  facebookPage: 'វិក្កយបត្រ Digital Pro',
+  logoUrl: '/digital_pro_logo.svg', // Permanent default system & studio logo
   khqrImageUrl: '', // Users can upload their Bakong KHQR
   bankAccountName: 'LAY MEAN',
   bankAccountNumber: '000 123 456',

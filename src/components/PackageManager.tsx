@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PackageItem, PackageCategory } from '../types';
 import { Package, Plus, Trash2, Edit3, Save, X, Check, DollarSign, Sparkles } from 'lucide-react';
+import { useLanguage } from '../lib/i18n';
 
 interface PackageManagerProps {
   packages: PackageItem[];
@@ -13,6 +14,7 @@ export const PackageManager: React.FC<PackageManagerProps> = ({
   onSavePackage,
   onDeletePackage,
 }) => {
+  const { lang, t } = useLanguage();
   const [editingPackage, setEditingPackage] = useState<PackageItem | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -229,66 +231,92 @@ export const PackageManager: React.FC<PackageManagerProps> = ({
       )}
 
       {/* Package Grid List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {packages.map((pkg) => (
-          <div
-            key={pkg.id}
-            className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-4 flex flex-col justify-between hover:shadow-md transition-shadow"
+      {packages.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+          <Package className="w-12 h-12 text-slate-300 mx-auto" />
+          <h3 className="text-base font-bold text-slate-700">
+            {lang === 'km' ? 'មិនទាន់មានកញ្ចប់សេវាកម្មនៅឡើយទេ' : 'No service packages available'}
+          </h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            {lang === 'km' 
+              ? 'សូមចុចប៊ូតុង "បង្កើតកញ្ចប់ថ្មី" នៅខាងលើ ដើម្បីបង្កើតកញ្ចប់តម្លៃ និងសេវាកម្មដំបូងរបស់អ្នក'
+              : 'Click the "New Package" button above to create your first package.'}
+          </p>
+          <button
+            onClick={handleOpenCreate}
+            className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs transition-all cursor-pointer mt-2"
           >
-            <div>
-              <div className="flex justify-between items-start">
-                <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded bg-slate-100 text-slate-700">
-                  {pkg.category === 'pre_wedding'
-                    ? 'Pre-wedding'
-                    : pkg.category === 'wedding_day'
-                    ? 'ថ្ងៃមង្គលការ'
-                    : 'Combo'}
-                </span>
-                <span className="text-xl font-black text-amber-600">
-                  ${pkg.price.toLocaleString()}
-                </span>
+            <Plus className="w-4 h-4" />
+            <span>{lang === 'km' ? 'បង្កើតកញ្ចប់ថ្មី' : 'Create New Package'}</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {packages.map((pkg) => (
+            <div
+              key={pkg.id}
+              className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-4 flex flex-col justify-between hover:shadow-md transition-shadow"
+            >
+              <div>
+                <div className="flex justify-between items-start">
+                  <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded bg-slate-100 text-slate-700">
+                    {pkg.category === 'pre_wedding'
+                      ? 'Pre-wedding'
+                      : pkg.category === 'wedding_day'
+                      ? (lang === 'km' ? 'ថ្ងៃមង្គលការ' : 'Wedding Day')
+                      : 'Combo'}
+                  </span>
+                  <span className="text-xl font-black text-amber-600">
+                    ${pkg.price.toLocaleString()}
+                  </span>
+                </div>
+
+                <h3 className="text-base font-extrabold text-slate-900 mt-2">
+                  {lang === 'km' ? pkg.nameKhmer : (pkg.nameEnglish || pkg.nameKhmer)}
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  {pkg.description}
+                </p>
+
+                {pkg.includedItems && pkg.includedItems.length > 0 && (
+                  <ul className="mt-3 space-y-1 text-xs text-slate-700 border-t border-slate-100 pt-3">
+                    {pkg.includedItems.map((item, i) => (
+                      <li key={i} className="flex items-start space-x-1.5">
+                        <Check className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
-              <h3 className="text-base font-extrabold text-slate-900 mt-2">
-                {pkg.nameKhmer}
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                {pkg.description}
-              </p>
-
-              {pkg.includedItems && pkg.includedItems.length > 0 && (
-                <ul className="mt-3 space-y-1 text-xs text-slate-700 border-t border-slate-100 pt-3">
-                  {pkg.includedItems.map((item, i) => (
-                    <li key={i} className="flex items-start space-x-1.5">
-                      <Check className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="flex items-center justify-end space-x-2 border-t border-slate-100 pt-3">
+                <button
+                  onClick={() => handleOpenEdit(pkg)}
+                  className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                  title={lang === 'km' ? 'កែប្រែ' : 'Edit'}
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    const confirmMsg = lang === 'km'
+                      ? `តើអ្នកប្រាកដជាចង់លុបកញ្ចប់ "${pkg.nameKhmer}" នេះឬ?`
+                      : `Are you sure you want to delete "${pkg.nameEnglish || pkg.nameKhmer}"?`;
+                    if (confirm(confirmMsg)) {
+                      onDeletePackage(pkg.id);
+                    }
+                  }}
+                  className="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-xl transition-colors cursor-pointer"
+                  title={lang === 'km' ? 'លុប' : 'Delete'}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-
-            <div className="flex items-center justify-end space-x-2 border-t border-slate-100 pt-3">
-              <button
-                onClick={() => handleOpenEdit(pkg)}
-                className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-              >
-                <Edit3 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => {
-                  if (confirm(`តើអ្នកប្រាកដជាចង់លុបកញ្ចប់ "${pkg.nameKhmer}" នេះឬ?`)) {
-                    onDeletePackage(pkg.id);
-                  }
-                }}
-                className="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-xl transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

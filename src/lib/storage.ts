@@ -1,4 +1,4 @@
-import { Invoice, PackageItem, StudioProfile, CustomerProfile, UserAccount, SystemConfig } from '../types';
+import { Invoice, PackageItem, StudioProfile, CustomerProfile, UserAccount, SystemConfig, UpgradeRequest, UpgradeRequestStatus } from '../types';
 import { DEFAULT_STUDIO_PROFILE, DEFAULT_PACKAGES } from './constants';
 import { 
   subscribeStudioProfile, 
@@ -32,7 +32,11 @@ function loadLocalStudioCache(): StudioProfile {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object') {
-        return { ...DEFAULT_STUDIO_PROFILE, ...parsed };
+        return {
+          ...DEFAULT_STUDIO_PROFILE,
+          ...parsed,
+          logoUrl: parsed.logoUrl || '/digital_pro_logo.svg'
+        };
       }
     }
   } catch (e) {
@@ -79,9 +83,9 @@ function loadLocalPackagesCache(): PackageItem[] {
   if (typeof window === 'undefined') return DEFAULT_PACKAGES;
   try {
     const raw = localStorage.getItem(PACKAGES_CACHE_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) return parsed;
     }
   } catch (e) {}
   return DEFAULT_PACKAGES;
@@ -157,7 +161,11 @@ if (typeof window !== 'undefined') {
 
 // 1. Studio Profile (Cloud Firestore)
 export function getStudioProfile(): StudioProfile {
-  return cloudStudioCache || DEFAULT_STUDIO_PROFILE;
+  const profile = cloudStudioCache || DEFAULT_STUDIO_PROFILE;
+  return {
+    ...profile,
+    logoUrl: profile.logoUrl || '/digital_pro_logo.svg'
+  };
 }
 
 export function saveStudioProfile(profile: StudioProfile): void {
@@ -173,7 +181,16 @@ export function saveStudioProfile(profile: StudioProfile): void {
 
 // 2. System Config (Cloud Firestore)
 export function getSystemConfig(): SystemConfig {
-  return cloudConfigCache;
+  const config = cloudConfigCache || {
+    allowPublicRegistration: true,
+    maintenanceMode: false,
+    systemTitle: 'វិក្កយបត្រ Digital Pro',
+    defaultCurrency: 'USD'
+  };
+  return {
+    ...config,
+    systemTitle: config.systemTitle || 'វិក្កយបត្រ Digital Pro'
+  };
 }
 
 export function saveSystemConfig(config: SystemConfig): void {
@@ -238,11 +255,14 @@ export function deleteInvoice(id: string): void {
 
 // 4. Packages (Cloud Firestore)
 export function getPackages(): PackageItem[] {
-  return cloudPackagesCache || DEFAULT_PACKAGES;
+  return cloudPackagesCache || [];
 }
 
 export function savePackages(packages: PackageItem[]): void {
   cloudPackagesCache = packages;
+  try {
+    localStorage.setItem(PACKAGES_CACHE_KEY, JSON.stringify(packages));
+  } catch (e) {}
   packages.forEach((p) => savePackageToCloud(p));
   notifyChange();
 }
@@ -254,6 +274,9 @@ export function saveSinglePackage(pkg: PackageItem): void {
   } else {
     cloudPackagesCache.push(pkg);
   }
+  try {
+    localStorage.setItem(PACKAGES_CACHE_KEY, JSON.stringify(cloudPackagesCache));
+  } catch (e) {}
   savePackageToCloud(pkg).catch((err) => {
     console.error('Failed to save package to Cloud Firestore:', err);
   });
@@ -262,6 +285,9 @@ export function saveSinglePackage(pkg: PackageItem): void {
 
 export function deletePackage(id: string): void {
   cloudPackagesCache = cloudPackagesCache.filter((p) => p.id !== id);
+  try {
+    localStorage.setItem(PACKAGES_CACHE_KEY, JSON.stringify(cloudPackagesCache));
+  } catch (e) {}
   deletePackageFromCloud(id).catch((err) => {
     console.error('Failed to delete package from Cloud Firestore:', err);
   });
@@ -272,14 +298,17 @@ export function deletePackage(id: string): void {
 export function getCustomers(): CustomerProfile[] {
   const invoices = getInvoices();
   const map = new Map<string, CustomerProfile>();
+  let count = 0;
 
   invoices.forEach((inv) => {
     const key = ((inv.customerPhone || '').trim() || (inv.customerName || '').trim()).toLowerCase();
     if (!key) return;
 
     if (!map.has(key)) {
+      count++;
+      const safeSlug = encodeURIComponent(key).replace(/%/g, '').slice(0, 16);
       map.set(key, {
-        id: `cust-${key.replace(/[^a-z0-9]/g, '')}`,
+        id: `cust-${count}-${safeSlug || 'user'}`,
         name: inv.customerName,
         phone: inv.customerPhone,
         weddingDate: inv.weddingDate,
@@ -402,3 +431,80 @@ export function importAllDataJSON(jsonStr: string): boolean {
     return false;
   }
 }
+
+// ==========================================
+// UPGRADE REQUESTS & DAILY INVOICE LIMITS
+// ==========================================
+const UPGRADE_REQUESTS_KEY = 'laymean_upgrade_requests_cache';
+
+export function getUpgradeRequests(): UpgradeRequest[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(UPGRADE_REQUESTS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return [];
+}
+
+export function saveUpgradeRequest(req: UpgradeRequest): void {
+  const list = getUpgradeRequests();
+  const existingIdx = list.findIndex(r => r.id === req.id);
+  let nextList: UpgradeRequest[];
+  if (existingIdx >= 0) {
+    nextList = [...list];
+    nextList[existingIdx] = req;
+  } else {
+    nextList = [req, ...list];
+  }
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(UPGRADE_REQUESTS_KEY, JSON.stringify(nextList));
+  }
+  notifyChange();
+}
+
+export function updateUpgradeRequestStatus(requestId: string, status: UpgradeRequestStatus, note?: string): void {
+  const list = getUpgradeRequests();
+  const req = list.find(r => r.id === requestId);
+  if (!req) return;
+
+  const updatedReq: UpgradeRequest = {
+    ...req,
+    status,
+    approvedAt: status === 'approved' ? new Date().toISOString() : req.approvedAt,
+    note: note || req.note
+  };
+
+  saveUpgradeRequest(updatedReq);
+
+  // If approved, update user account to lifetime_unlimited
+  if (status === 'approved') {
+    const users = getUsers();
+    const targetUser = users.find(u => u.id === req.userId);
+    if (targetUser) {
+      const updatedUser: UserAccount = {
+        ...targetUser,
+        plan: 'unlimited',
+        isUnlimited: true
+      };
+      saveSingleUser(updatedUser);
+    }
+  }
+}
+
+// Calculate total invoices created today by a user
+export function getUserTodayInvoiceCount(userId: string): number {
+  if (!userId) return 0;
+  const invoices = getInvoices();
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  return invoices.filter(inv => {
+    const createdDate = (inv.createdAt || inv.issueDate || '').split('T')[0];
+    const isToday = createdDate === today;
+    // Check if created by this user ID, or match username/creator
+    const creatorMatch = (inv as any).createdBy ? (inv as any).createdBy === userId : true;
+    return isToday && creatorMatch;
+  }).length;
+}
+
