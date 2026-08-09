@@ -74,21 +74,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '/digital_pro_logo.svg';
                   }}
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-contain bg-slate-950 p-0.5 ring-2 ring-emerald-500/60 shadow-md group-hover:scale-105 transition-transform" 
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-contain bg-slate-950 p-1 ring-2 ring-emerald-500/70 shadow-lg group-hover:scale-105 transition-transform" 
                 />
-                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-emerald-500 border-2 border-slate-900 rounded-full animate-pulse" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full animate-pulse" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center space-x-1 sm:space-x-1.5">
-                  <h1 className="text-xs sm:text-base font-black tracking-tight text-white group-hover:text-blue-400 transition-colors truncate max-w-[125px] sm:max-w-xs">
+                  <h1 className="text-xs sm:text-base font-black tracking-tight text-white group-hover:text-blue-400 transition-colors truncate max-w-[130px] sm:max-w-xs">
                     វិក្កយបត្រ Digital Pro
                   </h1>
                   <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-blue-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
                     SUPER APP
                   </span>
                 </div>
-                <p className="text-[10px] sm:text-[11px] text-slate-400 truncate max-w-[125px] sm:max-w-xs">
-                  {studio.khmerName || studio.name || 'ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ'}
+                <p className="text-[10px] sm:text-[11px] text-slate-400 truncate max-w-[130px] sm:max-w-xs">
+                  {studio.name || 'ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ'}
                 </p>
               </div>
             </div>
@@ -96,20 +96,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* User Profile & Quick Action Buttons */}
             <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
               
-              {/* Language Switcher Toggle */}
+              {/* Language Switcher Toggle (Desktop header view; mobile view accessible in Studio Settings) */}
               <button
                 onClick={toggleLanguage}
-                className="inline-flex items-center space-x-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
+                className="hidden md:inline-flex items-center space-x-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
                 title={lang === 'km' ? 'Switch to English' : 'ប្តូរទៅភាសាខ្មែរ'}
               >
                 <Globe className="w-3.5 h-3.5 text-amber-400" />
                 <span className="font-extrabold">{lang === 'km' ? '🇰🇭 ខ្មែរ' : '🇬🇧 EN'}</span>
               </button>
 
-              {/* Add to Home Screen / Install App Button */}
+              {/* Add to Home Screen / Install App Button (Desktop header view; mobile view accessible in Studio Settings) */}
               <button
                 onClick={() => setIsPwaModalOpen(true)}
-                className="inline-flex items-center space-x-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow-sm border border-emerald-400/30 text-[11px] sm:text-xs transition-all active:scale-95 cursor-pointer"
+                className="hidden md:inline-flex items-center space-x-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow-sm border border-emerald-400/30 text-[11px] sm:text-xs transition-all active:scale-95 cursor-pointer"
                 title="ដំឡើង App ទៅលើ Home Screen ដូច App Original"
               >
                 <Smartphone className="w-3.5 h-3.5 text-emerald-200 animate-pulse" />

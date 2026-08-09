@@ -13,12 +13,14 @@ import {
   Sparkles,
   Link as LinkIcon,
   Palette,
-  Globe
+  Globe,
+  Smartphone
 } from 'lucide-react';
 import { exportAllDataJSON, importAllDataJSON } from '../lib/storage';
 import { compressImageToDataUrl } from '../lib/imageUtils';
 import { INVOICE_TEMPLATES } from './InvoiceTemplateSelector';
 import { useLanguage } from '../lib/i18n';
+import { InstallPwaModal } from './InstallPwaModal';
 
 interface StudioSettingsProps {
   studio: StudioProfile;
@@ -38,6 +40,7 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
   );
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [logoUrlInput, setLogoUrlInput] = useState('');
+  const [isPwaModalOpen, setIsPwaModalOpen] = useState(false);
 
   useEffect(() => {
     setProfile(studio);
@@ -149,57 +152,83 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
         </div>
       )}
 
-      {/* Language Selection Card */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
-        <div className="flex items-center space-x-2">
-          <Globe className="w-5 h-5 text-indigo-600" />
-          <h3 className="font-extrabold text-slate-900 text-sm">
-            {lang === 'km' ? 'ភាសាប្រើប្រាស់ក្នុងប្រព័ន្ធ (System Language)' : 'System Language Setting'}
-          </h3>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            type="button"
-            onClick={() => setLang('km')}
-            className={`p-4 rounded-xl border-2 flex items-center justify-between transition-all cursor-pointer ${
-              lang === 'km'
-                ? 'border-amber-500 bg-amber-50/50 shadow-sm'
-                : 'border-slate-200 hover:border-slate-300 bg-slate-50'
-            }`}
-          >
-            <div className="flex items-center space-x-3">
-              <span className="text-2xl">🇰🇭</span>
-              <div className="text-left">
-                <p className="font-extrabold text-slate-900 text-sm">ភាសាខ្មែរ (Khmer)</p>
-                <p className="text-xs text-slate-500">ភាសាផ្លូវការរបស់ប្រព័ន្ធ</p>
+      {/* Quick Mobile App Install & System Language Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {/* Language Selection Card */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-3">
+          <div className="flex items-center space-x-2 border-b border-slate-100 pb-2">
+            <Globe className="w-5 h-5 text-indigo-600" />
+            <h3 className="font-extrabold text-slate-900 text-sm">
+              {lang === 'km' ? 'ភាសាប្រើប្រាស់ក្នុងប្រព័ន្ធ (System Language)' : 'System Language Setting'}
+            </h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setLang('km')}
+              className={`p-3 rounded-xl border-2 flex items-center justify-between transition-all cursor-pointer ${
+                lang === 'km'
+                  ? 'border-amber-500 bg-amber-50/50 shadow-sm'
+                  : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <span className="text-xl">🇰🇭</span>
+                <div className="text-left">
+                  <p className="font-extrabold text-slate-900 text-xs">ភាសាខ្មែរ</p>
+                </div>
               </div>
-            </div>
-            {lang === 'km' && (
-              <span className="w-3 h-3 bg-amber-500 rounded-full ring-4 ring-amber-200" />
-            )}
-          </button>
+              {lang === 'km' && (
+                <span className="w-2.5 h-2.5 bg-amber-500 rounded-full ring-4 ring-amber-200" />
+              )}
+            </button>
 
+            <button
+              type="button"
+              onClick={() => setLang('en')}
+              className={`p-3 rounded-xl border-2 flex items-center justify-between transition-all cursor-pointer ${
+                lang === 'en'
+                  ? 'border-amber-500 bg-amber-50/50 shadow-sm'
+                  : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <span className="text-xl">🇬🇧</span>
+                <div className="text-left">
+                  <p className="font-extrabold text-slate-900 text-xs">English</p>
+                </div>
+              </div>
+              {lang === 'en' && (
+                <span className="w-2.5 h-2.5 bg-amber-500 rounded-full ring-4 ring-amber-200" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Install Mobile App PWA Card */}
+        <div className="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-5 rounded-2xl border border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
+          <div className="flex items-center space-x-2 border-b border-slate-800 pb-2">
+            <Smartphone className="w-5 h-5 text-emerald-400 animate-pulse" />
+            <h3 className="font-extrabold text-white text-sm">
+              {lang === 'km' ? 'ដំឡើង App លើទូរស័ព្ទ (Install Mobile App)' : 'Install App on Phone'}
+            </h3>
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            {lang === 'km' 
+              ? 'ដំឡើងប្រព័ន្ធវិក្កយបត្រនេះទៅលើអេក្រង់ Home Screen ទូរស័ព្ទដៃ (iOS & Android) ដើម្បីប្រើប្រាស់បានលឿន!'
+              : 'Add Digital Pro Invoicing directly to your home screen for fast mobile access.'}
+          </p>
           <button
             type="button"
-            onClick={() => setLang('en')}
-            className={`p-4 rounded-xl border-2 flex items-center justify-between transition-all cursor-pointer ${
-              lang === 'en'
-                ? 'border-amber-500 bg-amber-50/50 shadow-sm'
-                : 'border-slate-200 hover:border-slate-300 bg-slate-50'
-            }`}
+            onClick={() => setIsPwaModalOpen(true)}
+            className="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:brightness-110 text-slate-950 font-black rounded-xl text-xs shadow-md transition-all cursor-pointer flex items-center justify-center space-x-2"
           >
-            <div className="flex items-center space-x-3">
-              <span className="text-2xl">🇬🇧</span>
-              <div className="text-left">
-                <p className="font-extrabold text-slate-900 text-sm">English</p>
-                <p className="text-xs text-slate-500">English Language Interface</p>
-              </div>
-            </div>
-            {lang === 'en' && (
-              <span className="w-3 h-3 bg-amber-500 rounded-full ring-4 ring-amber-200" />
-            )}
+            <Smartphone className="w-4 h-4 fill-slate-950" />
+            <span>{lang === 'km' ? '📲 ដំឡើង App លើទូរស័ព្ទ (Install App)' : '📲 Install Mobile App Now'}</span>
           </button>
         </div>
+
       </div>
 
       {/* Header */}
@@ -391,8 +420,11 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
               value={profile.khmerName}
               onChange={(e) => setProfile({ ...profile, khmerName: e.target.value })}
               placeholder="ឧ. ជាងថតរូប ឡាយ មីន"
-              className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold"
+              className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold text-slate-900"
             />
+            <p className="text-[11px] text-amber-700 font-bold mt-1.5 bg-amber-50 p-2 rounded-lg border border-amber-200">
+              ℹ️ ឈ្មោះភាសាខ្មែរនេះនឹងត្រូវបង្ហាញ និងដំណើរការតែនៅលើផ្ទាំង Invoice របស់គណនី User តែប៉ុណ្ណោះ (មិនប្តូរឈ្មោះប្រព័ន្ធទាំងមូលឡើយ)
+            </p>
           </div>
 
           <div>
@@ -675,6 +707,11 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
           <span>រក្សាទុកការកំណត់ទាំងអស់ទៅ Cloud</span>
         </button>
       </div>
+
+      <InstallPwaModal
+        isOpen={isPwaModalOpen}
+        onClose={() => setIsPwaModalOpen(false)}
+      />
 
     </form>
   );

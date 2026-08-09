@@ -563,7 +563,7 @@ export function InvoiceTemplateRender({
               <p className="font-black text-slate-900 text-xs uppercase tracking-wider text-blue-700">Payment instruction</p>
               {studio.khqrImageUrl ? (
                 <div className="flex items-center space-x-4 bg-white p-3.5 rounded-2xl border border-slate-300 shadow-sm">
-                  <img src={studio.khqrImageUrl} alt="Bakong KHQR" className="w-28 h-28 object-contain rounded-xl shrink-0 ring-1 ring-slate-200" />
+                  <img src={studio.khqrImageUrl} alt="Bakong KHQR" crossOrigin="anonymous" className="w-28 h-28 object-contain rounded-xl shrink-0 ring-1 ring-slate-200" />
                   <div className="text-xs text-slate-700 space-y-1">
                     <p className="font-black text-slate-900 text-sm">Bakong KHQR Payment</p>
                     <p className="font-bold text-slate-800">Account: <span className="font-extrabold text-blue-900">{studio.bankAccountName || studio.name}</span></p>
@@ -777,7 +777,7 @@ export function InvoiceTemplateRender({
           {/* KHQR code preview & Bank account */}
           {studio.khqrImageUrl ? (
             <div className="flex items-center space-x-4 bg-white p-3.5 rounded-2xl border border-slate-300 shadow-sm flex-1 max-w-md">
-              <img src={studio.khqrImageUrl} alt="Bakong KHQR" className="w-28 h-28 object-contain rounded-xl border border-slate-200 bg-white p-1 shadow-sm shrink-0" />
+              <img src={studio.khqrImageUrl} alt="Bakong KHQR" crossOrigin="anonymous" className="w-28 h-28 object-contain rounded-xl border border-slate-200 bg-white p-1 shadow-sm shrink-0" />
               <div className="text-xs text-slate-700 space-y-1.5">
                 <p className="font-black text-slate-900 text-sm">Bakong KHQR Payment</p>
                 <p className="font-bold text-slate-800">ឈ្មោះគណនី: <span className="font-extrabold text-slate-950">{studio.bankAccountName || 'LAY MEAN'}</span></p>

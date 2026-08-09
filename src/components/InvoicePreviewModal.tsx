@@ -47,6 +47,56 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  // Helper to ensure all images in DOM are converted to Data URLs before toPng export
+  const inlineContainerImages = async (container: HTMLElement) => {
+    const images = Array.from(container.querySelectorAll('img'));
+    await Promise.all(
+      images.map(async (img) => {
+        if (!img.src || img.src.startsWith('data:')) return;
+
+        try {
+          const res = await fetch(img.src, { mode: 'cors', cache: 'force-cache' });
+          if (res.ok) {
+            const blob = await res.blob();
+            const dataUrl = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve((reader.result as string) || '');
+              reader.readAsDataURL(blob);
+            });
+            if (dataUrl && dataUrl.startsWith('data:')) {
+              img.src = dataUrl;
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn('Direct fetch image inline failed:', img.src, err);
+        }
+
+        try {
+          if (!img.complete || img.naturalWidth === 0) {
+            await new Promise((resolve) => {
+              img.onload = resolve;
+              img.onerror = resolve;
+            });
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || img.clientWidth || 300;
+          canvas.height = img.naturalHeight || img.clientHeight || 300;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const canvasDataUrl = canvas.toDataURL('image/png');
+            if (canvasDataUrl && canvasDataUrl !== 'data:,') {
+              img.src = canvasDataUrl;
+            }
+          }
+        } catch (e) {
+          console.error('Canvas image inline failed:', e);
+        }
+      })
+    );
+  };
+
   // High Resolution PNG Export supporting full A4 paper format on mobile & desktop
   const handleExportPNG = async () => {
     if (!invoiceRef.current) return;
@@ -55,6 +105,9 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
     try {
       const element = invoiceRef.current;
       
+      // Convert all images (Logo & KHQR) to Base64 to guarantee visibility in PNG
+      await inlineContainerImages(element);
+
       // Calculate exact full dimensions of the invoice card (A4 ratio min 794px x 1123px)
       const targetWidth = Math.max(element.scrollWidth, element.offsetWidth, 794);
       const targetHeight = Math.max(element.scrollHeight, element.offsetHeight, 1123);
