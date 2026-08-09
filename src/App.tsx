@@ -127,6 +127,13 @@ export default function App() {
     if (selectedInvoiceForView?.id === id) setSelectedInvoiceForView(null);
   };
 
+  const handleBulkDeleteInvoices = (ids: string[]) => {
+    ids.forEach((id) => deleteInvoice(id));
+    if (selectedInvoiceForView && ids.includes(selectedInvoiceForView.id)) {
+      setSelectedInvoiceForView(null);
+    }
+  };
+
   const handleEditInvoice = (inv: Invoice) => {
     setInvoiceToEdit(inv);
     setActiveTab('create_invoice');
@@ -291,6 +298,7 @@ export default function App() {
                 onEdit={handleEditInvoice}
                 onPayment={(inv) => setSelectedInvoiceForPayment(inv)}
                 onDelete={handleDeleteInvoice}
+                onBulkDelete={handleBulkDeleteInvoices}
                 onCreateNew={handleCreateNewClick}
               />
             )}

@@ -30,6 +30,7 @@ interface InvoiceListProps {
   onEdit: (invoice: Invoice) => void;
   onPayment: (invoice: Invoice) => void;
   onDelete: (id: string) => void;
+  onBulkDelete?: (ids: string[]) => void;
   onCreateNew: () => void;
 }
 
@@ -40,12 +41,14 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   onEdit,
   onPayment,
   onDelete,
+  onBulkDelete,
   onCreateNew,
 }) => {
   const { lang, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<string[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -72,6 +75,48 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       return matchesSearch && matchesStatus && matchesCategory;
     });
   }, [invoices, searchQuery, statusFilter, categoryFilter]);
+
+  // Select All & Bulk Selection Logic
+  const isAllSelected =
+    filteredInvoices.length > 0 &&
+    filteredInvoices.every((inv) => selectedInvoiceIds.includes(inv.id));
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedInvoiceIds([]);
+    } else {
+      setSelectedInvoiceIds(filteredInvoices.map((inv) => inv.id));
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedInvoiceIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDeleteAction = () => {
+    if (selectedInvoiceIds.length === 0) return;
+    const count = selectedInvoiceIds.length;
+    const confirmMsg =
+      lang === 'km'
+        ? `តើអ្នកប្រាកដជាចង់លុបវិក្កយបត្រចំនួន ${count} ដែលបានជ្រើសរើសនេះមែនទេ?`
+        : `Are you sure you want to delete ${count} selected invoices?`;
+
+    if (window.confirm(confirmMsg)) {
+      if (onBulkDelete) {
+        onBulkDelete(selectedInvoiceIds);
+      } else {
+        selectedInvoiceIds.forEach((id) => onDelete(id));
+      }
+      setSelectedInvoiceIds([]);
+      showToast(
+        lang === 'km'
+          ? `បានលុបវិក្កយបត្រចំនួន ${count} រួចរាល់!`
+          : `Successfully deleted ${count} invoices!`
+      );
+    }
+  };
 
   // Statistics
   const stats = useMemo(() => {
@@ -225,6 +270,45 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
         </button>
       </div>
 
+      {/* Select All & Bulk Delete Bar */}
+      {filteredInvoices.length > 0 && (
+        <div className="bg-slate-900 text-white p-3 px-4 rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-3 border border-slate-800">
+          <div className="flex items-center space-x-3">
+            <label className="inline-flex items-center space-x-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={isAllSelected}
+                onChange={handleToggleSelectAll}
+                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-500"
+              />
+              <span className="text-xs font-bold text-slate-200">
+                {lang === 'km' ? 'ជ្រើសរើសទាំងអស់' : 'Select All'} ({filteredInvoices.length})
+              </span>
+            </label>
+
+            {selectedInvoiceIds.length > 0 && (
+              <span className="text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40 px-2.5 py-0.5 rounded-full">
+                {lang === 'km' ? `បានជ្រើស ${selectedInvoiceIds.length}` : `Selected ${selectedInvoiceIds.length}`}
+              </span>
+            )}
+          </div>
+
+          {selectedInvoiceIds.length > 0 && (
+            <button
+              onClick={handleBulkDeleteAction}
+              className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold px-3.5 py-1.5 rounded-lg text-xs shadow-md transition-all active:scale-95 cursor-pointer border border-rose-400/40"
+            >
+              <Trash2 className="w-3.5 h-3.5 shrink-0" />
+              <span>
+                {lang === 'km'
+                  ? `លុបវិក្កយបត្រដែលបានជ្រើស (${selectedInvoiceIds.length})`
+                  : `Delete Selected (${selectedInvoiceIds.length})`}
+              </span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Invoice Table / Cards List */}
       {filteredInvoices.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
@@ -248,21 +332,34 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
           {filteredInvoices.map((inv) => {
             const isFullyPaid = inv.status === 'paid';
             const isDeposit = inv.status === 'deposit';
+            const isSelected = selectedInvoiceIds.includes(inv.id);
 
             return (
               <div
                 key={inv.id}
-                className="bg-white rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition-all p-5 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className={`bg-white rounded-xl border transition-all p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                  isSelected
+                    ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20'
+                    : 'border-slate-200 shadow-sm hover:border-slate-300'
+                }`}
               >
-                {/* Left: Customer & Event Details */}
-                <div className="space-y-2 flex-1">
-                  <div className="flex items-center space-x-3 flex-wrap gap-y-1">
-                    <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200/60">
-                      #{inv.invoiceNumber}
-                    </span>
-                    <h3 className="text-base font-bold text-slate-900">
-                      {inv.customerName}
-                    </h3>
+                {/* Left: Checkbox + Customer & Event Details */}
+                <div className="flex items-start space-x-3 flex-1">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => handleToggleSelect(inv.id)}
+                    className="w-4 h-4 mt-1 rounded text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600 shrink-0"
+                    title="ជ្រើសរើសវិក្កយបត្រនេះ"
+                  />
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center space-x-3 flex-wrap gap-y-1">
+                      <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200/60">
+                        #{inv.invoiceNumber}
+                      </span>
+                      <h3 className="text-base font-bold text-slate-900">
+                        {inv.customerName}
+                      </h3>
 
                     {/* Status Badge */}
                     {isFullyPaid && (
@@ -312,6 +409,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                     សេវាកម្ម: <span className="text-slate-800 font-semibold">{inv.packageName}</span>
                   </p>
                 </div>
+              </div>
 
                 {/* Center: Financial Figures */}
                 <div className="grid grid-cols-3 gap-1.5 sm:gap-4 bg-slate-50 p-2.5 sm:p-3 rounded-xl border border-slate-200/80 text-center">

@@ -429,19 +429,6 @@ export const StudioSettings: React.FC<StudioSettingsProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-              ឈ្មោះហាង / Studio (English)
-            </label>
-            <input
-              type="text"
-              value={profile.name}
-              onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-              placeholder="Digital Pro Studio"
-              className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
               ពាក្យស្លោក / Tagline
             </label>
             <input
